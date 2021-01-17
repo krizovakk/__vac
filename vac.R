@@ -17,6 +17,9 @@ pen <- read_excel("red/korbic.xlsx", sheet = 1)
 # pen$var[pen$var == 9] <- "C"
 # pen$var[pen$var == 10] <- "SOL"
 
+pen$var <- factor(pen$var, levels = c(0, 1, 2, 3, 4), 
+                  labels = c("0", "10", "20", "30", "40"))
+
 penl <- pen %>% 
   select(var, d4, d8, d12, d16, d20) %>% 
   melt(id.vars = c("var"), variable.name = ("depth"), value.name = "penres")
@@ -29,8 +32,10 @@ ggplot(penl, aes(depth, penres))+
   geom_bar(aes(width = 0.5),stat = "summary", fun.y = "mean")+
   coord_flip()+
   facet_grid(. ~ var)+
-  labs(y = "MPa", x = "depth [cm]", title = "Penetration Resistance")+
-  theme_minimal()
+  labs(y = "Penetration Resistance [MPa]", x = "Depth [cm]")+
+  ggtitle(expression("Digestate Dose [ t "~ha^-1~"]"))+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5, size = 11))
 ggsave("plots/penres.png", device = "png", width = 6, height = 3, dpi = 500)
 
 hist(pen$d4)
@@ -68,11 +73,13 @@ pairwise.wilcox.test(pen$d20, pen$var,
 
 rbd <- read_excel("red/korbic.xlsx", sheet = 2)
 
-rbd$var <- as.factor(rbd$var)
+rbd$var <- factor(rbd$var, levels = c(0, 1, 2, 3, 4), 
+                     labels = c("0", "10", "20", "30", "40"))
 
 ggplot(rbd, aes(var, roh))+
   geom_bar(stat = "summary", fun.y = "mean", width = 0.6)+
-  labs(y = expression("g."~ cm^-3~""), x = "var", title = "Reduced Bulk Density")+
+  labs(y = expression("Reduced Bulk Density [g "~ cm^-3~"]"), 
+       x = expression("Digestate Dose [ t "~ha^-1~"]"), title = "")+
   theme_minimal()
 ggsave("plots/rbd.png", device = "png", width = 6, height = 3, dpi = 500)
 
@@ -81,7 +88,8 @@ ggsave("plots/rbd.png", device = "png", width = 6, height = 3, dpi = 500)
 
 ggplot(rbd, aes(var, roh))+
   geom_bar(stat = "summary", fun.y = "mean", width = 0.6)+
-  labs(y = expression("g."~ cm^-3~""), x = "var", title = "Reduced Bulk Density")+
+  labs(y = expression("Reduced Bulk Density [g "~ cm^-3~"]"), 
+       x = expression("Digestate Dose [ t "~ha^-1~"]"), title = "")+
   coord_cartesian(ylim = c(1, 1.50))+
   theme_minimal()
 ggsave("plots/rbd_scale.png", device = "png", width = 6, height = 3, dpi = 500)
@@ -91,19 +99,21 @@ ggsave("plots/rbd_scale.png", device = "png", width = 6, height = 3, dpi = 500)
 em <- read_excel("red/korbic.xlsx", sheet = 3)
 
 eml <- em %>% 
-  select(var, amm, co2, meth) %>% 
-  melt(id.vars = c("var"), variable.name = ("gas"), value.name = "emmision")
+  select(var, dose, amm, co2, meth) %>% 
+  melt(id.vars = c("var", "dose"), variable.name = ("gas"), value.name = "emmision")
 
 eml$var <- as.factor(eml$var)
+eml$dose <- as.factor(eml$dose)
 
-# ammonium  ---------------------------------------------------------------
+# ammonium 
 
 amm <- eml %>% 
   filter(gas == "amm")
 
-ggplot(amm, aes(var, emmision))+
+ggplot(amm, aes(dose, emmision))+
   geom_boxplot()+
-  labs(y = expression("kg."~m^2~"/ y"), x = "var", fill = "", title = "Ammonia")+
+  labs(y = expression(paste("N",H[3]," [kg ",m^-2 , y^-1,"]")), 
+       x = expression("Digestate Dose [ t "~ha^-1~"]"))+
   theme_minimal()
 ggsave("plots/ammonia.png", device = "png", width = 6, height = 3, dpi = 500)
 
@@ -118,10 +128,10 @@ summary(aov1)
 co2 <- eml %>% 
   filter(gas == "co2")
 
-ggplot(co2, aes(var, emmision))+
+ggplot(co2, aes(dose, emmision))+
   geom_boxplot()+
-  labs(y = expression("kg."~m^2~"/ y"), x = "var", fill = "", 
-       title = expression("CO"[2]))+
+  labs(y = expression(paste("C",O[2]," [kg ",m^-2 , y^-1,"]")), 
+       x = expression("Digestate Dose [ t "~ha^-1~"]"))+
   theme_minimal()
 ggsave("plots/co2.png", device = "png", width = 6, height = 3, dpi = 500)
 
@@ -140,8 +150,8 @@ meth <- eml %>%
 
 ggplot(meth, aes(var, emmision))+
   geom_boxplot()+
-  labs(y = expression("kg."~m^2~"/ y"), x = "var", fill = "", 
-       title = "Methane")+
+  labs(y = expression(paste("C",H[4]," [kg ",m^-2 , y^-1,"]")), 
+       x = expression("Digestate Dose [ t "~ha^-1~"]"))+
   theme_minimal()
 ggsave("plots/methane.png", device = "png", width = 6, height = 3, dpi = 500)
 
@@ -152,3 +162,82 @@ aov3 <- aov(emmision ~ var, data = meth)
 summary(aov3)
 
 TukeyHSD(aov3)
+
+# NDVI --------------------------------------------------------------------
+
+ndvi <- read_excel("red/ndvi.xlsx", sheet = 1)
+
+ndvi$var <- factor(ndvi$var, levels = c("D0", "D10", "D20", "D30", "D40"), 
+                  labels = c("0", "10", "20", "30", "40"))
+ndvi$date <- as.factor(ndvi$date)
+
+ggplot(ndvi, aes(date, ndvi, color = var))+
+  geom_boxplot()+
+  labs(y = "NDVI", 
+       x = "Date")+
+  theme_minimal()
+ggsave("plots/ndvi_date.png", device = "png", width = 6, height = 3, dpi = 500)
+
+ggplot(ndvi, aes(var, ndvi, color = date))+
+  geom_boxplot()+
+  labs(y = "NDVI", 
+       x = expression("Digestate Dose [ t "~ha^-1~"]"))+
+  theme_minimal()
+ggsave("plots/ndvi_dose.png", device = "png", width = 6, height = 3, dpi = 500)
+
+# GNDVI -------------------------------------------------------------------
+
+gndvi <- read_excel("red/gndvi.xlsx", sheet = 1)
+
+gndvi$var <- factor(gndvi$var, levels = c("D0", "D10", "D20", "D30", "D40"), 
+                   labels = c("0", "10", "20", "30", "40"))
+gndvi$date <- as.factor(gndvi$date)
+
+ggplot(gndvi, aes(date, gndvi, color = var))+
+  geom_boxplot()+
+  labs(y = "GNDVI", 
+       x = "Date")+
+  theme_minimal()
+ggsave("plots/gndvi_date.png", device = "png", width = 6, height = 3, dpi = 500)
+
+ggplot(gndvi, aes(var, gndvi, color = date))+
+  geom_boxplot()+
+  labs(y = "GNDVI", 
+       x = expression("Digestate Dose [ t "~ha^-1~"]"))+
+  theme_minimal()
+ggsave("plots/gndvi_dose.png", device = "png", width = 6, height = 3, dpi = 500)
+
+# SAVI --------------------------------------------------------------------
+
+savi <- read_excel("red/savi.xlsx", sheet = 1)
+
+savi$var <- factor(savi$var, levels = c("D0", "D10", "D20", "D30", "D40"), 
+                    labels = c("0", "10", "20", "30", "40"))
+savi$date <- as.factor(savi$date)
+
+ggplot(savi, aes(date, savi, color = var))+
+  geom_boxplot()+
+  labs(y = "SAVI", 
+       x = "Date")+
+  theme_minimal()
+ggsave("plots/savi_date.png", device = "png", width = 6, height = 3, dpi = 500)
+
+ggplot(savi, aes(var, savi, color = date))+
+  geom_boxplot()+
+  labs(y = "SAVI", 
+       x = expression("Digestate Dose [ t "~ha^-1~"]"))+
+  theme_minimal()
+ggsave("plots/savi_dose.png", device = "png", width = 6, height = 3, dpi = 500)
+
+
+# RS data -----------------------------------------------------------------
+
+# ANOVA repeated measures
+
+summary(aov(ndvi ~ var + Error(date), data=ndvi))
+        
+install.packages("multcomp", dependencies = TRUE)
+
+
+
+
