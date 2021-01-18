@@ -167,6 +167,9 @@ TukeyHSD(aov3)
 
 ndvi <- read_excel("red/ndvi.xlsx", sheet = 1)
 
+ndvi <- ndvi %>% 
+  filter(dateid %in% c("a", "b", "c", "d", "e", "f"))
+
 ndvi$var <- factor(ndvi$var, levels = c("D0", "D10", "D20", "D30", "D40"), 
                   labels = c("0", "10", "20", "30", "40"))
 ndvi$date <- as.factor(ndvi$date)
@@ -175,8 +178,10 @@ ggplot(ndvi, aes(date, ndvi, color = var))+
   geom_boxplot()+
   labs(y = "NDVI", 
        x = "Date")+
-  theme_minimal()
-ggsave("plots/ndvi_date.png", device = "png", width = 6, height = 3, dpi = 500)
+  scale_color_discrete(expression("Digestate Dose [ t "~ha^-1~"]"))+
+  theme_minimal()+
+  theme(legend.position = "top")
+ggsave("plots/ndvi_date.png", device = "png", width = 8, height = 4, dpi = 500)
 
 ggplot(ndvi, aes(var, ndvi, color = date))+
   geom_boxplot()+
@@ -189,6 +194,9 @@ ggsave("plots/ndvi_dose.png", device = "png", width = 6, height = 3, dpi = 500)
 
 gndvi <- read_excel("red/gndvi.xlsx", sheet = 1)
 
+gndvi <- gndvi %>% 
+  filter(dateid %in% c("a", "b", "c", "d", "e", "f"))
+
 gndvi$var <- factor(gndvi$var, levels = c("D0", "D10", "D20", "D30", "D40"), 
                    labels = c("0", "10", "20", "30", "40"))
 gndvi$date <- as.factor(gndvi$date)
@@ -197,8 +205,10 @@ ggplot(gndvi, aes(date, gndvi, color = var))+
   geom_boxplot()+
   labs(y = "GNDVI", 
        x = "Date")+
-  theme_minimal()
-ggsave("plots/gndvi_date.png", device = "png", width = 6, height = 3, dpi = 500)
+  scale_color_discrete(expression("Digestate Dose [ t "~ha^-1~"]"))+
+  theme_minimal()+
+  theme(legend.position = "top")
+ggsave("plots/gndvi_date.png", device = "png", width = 8, height = 4, dpi = 500)
 
 ggplot(gndvi, aes(var, gndvi, color = date))+
   geom_boxplot()+
@@ -211,6 +221,9 @@ ggsave("plots/gndvi_dose.png", device = "png", width = 6, height = 3, dpi = 500)
 
 savi <- read_excel("red/savi.xlsx", sheet = 1)
 
+savi <- savi %>% 
+  filter(dateid %in% c("a", "b", "c", "d", "e", "f"))
+
 savi$var <- factor(savi$var, levels = c("D0", "D10", "D20", "D30", "D40"), 
                     labels = c("0", "10", "20", "30", "40"))
 savi$date <- as.factor(savi$date)
@@ -219,8 +232,10 @@ ggplot(savi, aes(date, savi, color = var))+
   geom_boxplot()+
   labs(y = "SAVI", 
        x = "Date")+
-  theme_minimal()
-ggsave("plots/savi_date.png", device = "png", width = 6, height = 3, dpi = 500)
+  scale_color_discrete(expression("Digestate Dose [ t "~ha^-1~"]"))+
+  theme_minimal()+
+  theme(legend.position = "top")
+ggsave("plots/savi_date.png", device = "png", width = 8, height = 4, dpi = 500)
 
 ggplot(savi, aes(var, savi, color = date))+
   geom_boxplot()+
