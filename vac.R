@@ -250,9 +250,93 @@ ggsave("plots/savi_dose.png", device = "png", width = 6, height = 3, dpi = 500)
 # ANOVA repeated measures
 
 summary(aov(ndvi ~ var + Error(date), data=ndvi))
+summary(aov(ndvi ~ var * date, data=ndvi))
         
-install.packages("multcomp", dependencies = TRUE)
+
+a1 <- aov(ndvi ~ var * date, data=ndvi)
+par.mfrow= c(2,2)
+plot(a1, which = 1:4)
+
+shapiro.test(ndvi$ndvi)
+hist(ndvi$ndvi)
+hist(log(ndvi$ndvi))
+shapiro.test(log(ndvi$ndvi))
 
 
+# RM ANOVA ----------------------------------------------------------------
 
+#https://neuropsychology.github.io/psycho.R/2018/05/01/repeated_measure_anovas.html
 
+install.packages("lmerTest")
+install.packages("psycho")
+require(lmerTest)
+require(psycho)
+
+fit <- lmer(ndvi ~ var + (1|date), data=ndvi)
+anova(fit)
+
+results <- analyze(fit)  # Error in analyze(fit) : could not find function "analyze"
+
+# https://www.youtube.com/watch?v=www1JPobnx0&ab_channel=AGRONInfo-Tech
+
+yb <- aov(ndvi ~ var + Error(date/var), data=ndvi)
+summary(yb)
+
+require(stats)
+
+pairwise.t.test(ndvi$ndvi, ndvi$var, p.adjust.method = "bonferroni")
+pairwise.t.test(ndvi$ndvi, ndvi$var, p.adjust.method = "BH")
+pairwise.t.test(ndvi$ndvi, ndvi$var, p.adjust.method = "hochberg")
+
+# https://www.datanovia.com/en/lessons/repeated-measures-anova-in-r/#one-way-repeated-measures-anova
+
+install.packages("ggpubr")
+install.packages("rstatix")
+library(ggpubr)
+library(rstatix)
+
+# summary statistics
+
+ndvi %>% 
+  group_by(date) %>% 
+  get_summary_stats(ndvi, type = "mean_sd")
+
+# visualisation
+
+bxp <- ggboxplot(ndvi, x = "date", y = "ndvi", ass = "point")
+bxp <- ggboxplot(ndvi, x = "var", y = "ndvi", ass = "point")
+bxp
+
+# check assumptions
+
+ndvi %>% 
+  group_by(var) %>% 
+  identify_outliers(ndvi)
+
+ndvi %>% 
+  group_by(var) %>% 
+  shapiro_test(ndvi)
+
+ggqqplot(ndvi, "ndvi", facet.by = "var")
+
+# computation
+
+ndvi$ID <- seq.int(nrow(ndvi))
+
+res.aov <- anova_test(data = ndvi, dv = index, wid = var, within = date) # Error in lm.fit(x, y, offset = offset, singular.ok = singular.ok, ...) : 0 (non-NA) cases
+get_anova_table(res.aov)
+
+all(is.na(var))
+all(is.na(ndvi))
+all(is.na(y^trans))
+
+colnames(ndvi)[1] <- "index"
+
+# post-hoc test
+
+pwc <- ndvi %>%
+  pairwise_t_test(
+    index ~ var, paired = TRUE,
+    p.adjust.method = "bonferroni")
+  
+pwc
