@@ -11,6 +11,8 @@ require(RColorBrewer)
 
 nasepaleta <- c("darkgreen", "limegreen", "darkturquoise", "dodgerblue4",
                  "gray60","burlywood4", "gray11")
+nasepaleta2 <- c("limegreen", "darkturquoise", "dodgerblue4",
+                 "gray60","burlywood4", "gray11") # pro HC / 2014 chybi mereni
 # KRAVA load -----------------------------------------------------------
 
 kra_pr <- read_excel("red/krava.xlsx", sheet = 2)
@@ -296,7 +298,6 @@ ggplot(kra_ud_div, aes(var, div, fill = year))+
   theme_minimal()
 ggsave("plots/kra_ud.png", device = "png", width = 6, height = 3, dpi = 500)
 
-
 # HYDRAULIC COND -----------------------------------------------------------
 
 kra_hc$var <- factor(kra_hc$var)
@@ -315,7 +316,7 @@ kra_hc_div <- kra_hc %>%
 
 ggplot(kra_hc_div, aes(var, div, fill = year))+
   geom_bar(position = "dodge", stat = "summary", fun.y = "mean", width = 0.6)+
-  scale_fill_manual(values = nasepaleta)+
+  scale_fill_manual(values = nasepaleta2)+
   labs(y = "Saturated Hydraulic Conductivity [%]", 
        x = "", title = "Cattle Manure", fill = "Season")+
   theme_minimal()
