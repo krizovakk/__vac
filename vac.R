@@ -195,29 +195,51 @@ ggplot(kra_pr_div, aes(depth, div, fill = year))+
   labs(x = "Depth [cm]", y = "Cone Index [%]", title = "Cattle Manure")+
   theme_minimal()+
   theme(legend.position = "none")
-ggsave("plots/kra_pr.png", device = "png", width = 5, height = 6, dpi = 500)
+# ggsave("plots/kra_pr.png", device = "png", width = 5, height = 6, dpi = 500)
 
-###
-pen$var <- factor(pen$var, levels = c(0, 1, 2, 3, 4), 
-                  labels = c("0", "10", "20", "30", "40"))
+# prase
 
-penl <- pen %>% 
-  select(var, d4, d8, d12, d16, d20) %>% 
-  melt(id.vars = c("var"), variable.name = ("depth"), value.name = "penres")
+pra_pr_div <- pra_pr %>% 
+  melt(id.vars = c("var", "year"), variable.name = ("depth"), value.name = "penres") %>% 
+  mutate(div = penres*100-100) %>% 
+  filter(var %in% c("sol", "fix", "fix_sol"))
+pra_pr_div$year <- factor(pra_pr_div$year)
 
 dept <- c("20", "16", "12", "8", "4")
-penl$depth <- factor(penl$depth, levels = c("d20", "d16", "d12", "d8", "d4"), 
-                                            labels = dept)
+pra_pr_div$depth <- factor(pra_pr_div$depth, levels = c("d20", "d16", "d12", "d08", "d04"), labels = dept)
 
-ggplot(penl, aes(depth, penres))+
-  geom_bar(aes(width = 0.5),stat = "summary", fun.y = "mean")+
+ggplot(pra_pr_div, aes(depth, div, fill = year))+
+  geom_bar(position = "dodge", stat = "summary", fun.y = "mean", width = 0.6)+
+  scale_fill_manual(values = nasepaleta)+
+  facet_grid(year ~ var, scales="fixed")+
   coord_flip()+
-  facet_grid(. ~ var)+
-  labs(y = "Penetration Resistance [MPa]", x = "Depth [cm]")+
-  ggtitle(expression("Digestate Dose [ t "~ha^-1~"]"))+
+  labs(x = "Depth [cm]", y = "Cone Index [%]", title = "Pig Manure")+
   theme_minimal()+
-  theme(plot.title = element_text(hjust = 0.5, size = 11))
-ggsave("plots/penres.png", device = "png", width = 6, height = 3, dpi = 500)
+  theme(legend.position = "none")
+# ggsave("plots/pra_pr.png", device = "png", width = 5, height = 6, dpi = 500)
+
+# npk
+
+npk_pr_div <- npk_pr %>% 
+  melt(id.vars = c("var", "year"), variable.name = ("depth"), value.name = "penres") %>% 
+  mutate(div = penres*100-100) %>% 
+  filter(var %in% c("c_fym", "sol", "p_fym"))
+npk_pr_div$year <- factor(npk_pr_div$year)
+
+dept <- c("20", "16", "12", "8", "4")
+npk_pr_div$depth <- factor(npk_pr_div$depth, levels = c("d20", "d16", "d12", "d08", "d04"), labels = dept)
+
+ggplot(npk_pr_div, aes(depth, div, fill = year))+
+  geom_bar(position = "dodge", stat = "summary", fun.y = "mean", width = 0.6)+
+  scale_fill_manual(values = nasepaleta)+
+  facet_grid(year ~ var, scales="fixed")+
+  coord_flip()+
+  labs(x = "Depth [cm]", y = "Cone Index [%]", title = "NPK")+
+  theme_minimal()+
+  theme(legend.position = "none")
+# ggsave("plots/npk_pr.png", device = "png", width = 5, height = 6, dpi = 500)
+
+###
 
 hist(pen$d4)
 hist(pen$d8)
@@ -272,7 +294,35 @@ ggplot(kra_roh_div, aes(var, div, fill = year))+
   labs(y = "Reduced Bulk Density [%]", 
        x = "", title = "Cattle Manure", fill = "Season")+
   theme_minimal()
-ggsave("plots/kra_roh.png", device = "png", width = 6, height = 3, dpi = 500)
+# ggsave("plots/kra_roh.png", device = "png", width = 6, height = 3, dpi = 500)
+
+# prase
+
+pra_roh_div <- pra_roh %>% 
+  mutate(div = roh*100-100) %>% 
+  filter(var %in% c("sol", "fix", "fix_sol"))
+
+ggplot(pra_roh_div, aes(var, div, fill = year))+
+  geom_bar(position = "dodge", stat = "summary", fun.y = "mean", width = 0.6)+
+  scale_fill_manual(values = nasepaleta)+
+  labs(y = "Reduced Bulk Density [%]", 
+       x = "", title = "Pig Manure", fill = "Season")+
+  theme_minimal()
+# ggsave("plots/pra_roh.png", device = "png", width = 6, height = 3, dpi = 500)
+
+# npk
+
+npk_roh_div <- npk_roh %>% 
+  mutate(div = roh*100-100) %>% 
+  filter(var %in% c("c_fym", "sol", "p_fym"))
+
+ggplot(npk_roh_div, aes(var, div, fill = year))+
+  geom_bar(position = "dodge", stat = "summary", fun.y = "mean", width = 0.6)+
+  scale_fill_manual(values = nasepaleta)+
+  labs(y = "Reduced Bulk Density [%]", 
+       x = "", title = "NPK", fill = "Season")+
+  theme_minimal()
+# ggsave("plots/npk_roh.png", device = "png", width = 6, height = 3, dpi = 500)
 
 # UNIT DRAFT --------------------------------------------------------------
 
@@ -296,7 +346,35 @@ ggplot(kra_ud_div, aes(var, div, fill = year))+
   labs(y = "Unit Draft [%]", 
        x = "", title = "Cattle Manure", fill = "Season")+
   theme_minimal()
-ggsave("plots/kra_ud.png", device = "png", width = 6, height = 3, dpi = 500)
+# ggsave("plots/kra_ud.png", device = "png", width = 6, height = 3, dpi = 500)
+
+# prase
+
+pra_ud_div <- pra_ud %>% 
+  mutate(div = unitd*100-100) %>% 
+  filter(var %in% c("sol", "fix", "fix_sol"))
+
+ggplot(pra_ud_div, aes(var, div, fill = year))+
+  geom_bar(position = "dodge", stat = "summary", fun.y = "mean", width = 0.6)+
+  scale_fill_manual(values = nasepaleta)+
+  labs(y = "Unit Draft [%]", 
+       x = "", title = "Pig Manure", fill = "Season")+
+  theme_minimal()
+# ggsave("plots/pra_ud.png", device = "png", width = 6, height = 3, dpi = 500)
+
+# npk
+
+npk_ud_div <- npk_ud %>% 
+  mutate(div = unitd*100-100) %>% 
+  filter(var %in% c("c_fym", "sol", "p_fym"))
+
+ggplot(npk_ud_div, aes(var, div, fill = year))+
+  geom_bar(position = "dodge", stat = "summary", fun.y = "mean", width = 0.6)+
+  scale_fill_manual(values = nasepaleta)+
+  labs(y = "Unit Draft [%]", 
+       x = "", title = "NPK", fill = "Season")+
+  theme_minimal()
+# ggsave("plots/npk_ud.png", device = "png", width = 6, height = 3, dpi = 500)
 
 # HYDRAULIC COND -----------------------------------------------------------
 
@@ -321,3 +399,33 @@ ggplot(kra_hc_div, aes(var, div, fill = year))+
        x = "", title = "Cattle Manure", fill = "Season")+
   theme_minimal()
 ggsave("plots/kra_hc.png", device = "png", width = 6, height = 3, dpi = 500)
+
+# prase
+
+pra_hc_div <- pra_hc %>% 
+  mutate(div = hcon*100-100) %>% 
+  filter(var %in% c("sol", "fix", "fix_sol"))
+
+ggplot(pra_hc_div, aes(var, div, fill = year))+
+  geom_bar(position = "dodge", stat = "summary", fun.y = "mean", width = 0.6)+
+  scale_fill_manual(values = nasepaleta2)+
+  labs(y = "Saturated Hydraulic Conductivity [%]", 
+       x = "", title = "Pig Manure", fill = "Season")+
+  theme_minimal()
+# ggsave("plots/pra_hc.png", device = "png", width = 6, height = 3, dpi = 500)
+
+# npk
+
+npk_hc_div <- npk_hc %>% 
+  mutate(div = hcon*100-100) %>% 
+  filter(var %in% c("c_fym", "sol", "p_fym"))
+
+ggplot(npk_hc_div, aes(var, div, fill = year))+
+  geom_bar(position = "dodge", stat = "summary", fun.y = "mean", width = 0.6)+
+  scale_fill_manual(values = nasepaleta2)+
+  labs(y = "Saturated Hydraulic Conductivity [%]", 
+       x = "", title = "NPK", fill = "Season")+
+  theme_minimal()
+# ggsave("plots/npk_hc.png", device = "png", width = 6, height = 3, dpi = 500)
+
+
