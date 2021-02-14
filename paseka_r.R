@@ -4,11 +4,13 @@
 # install.packages("readxl")
 # install.packages("reshape2")
 # install.packages("psych")
+# install.packages("writexl")
 
 require(tidyverse)
 require(readxl)
 require(reshape2)
 require(psych)
+require(writexl)
 
 palet3 <- c("grey92", "darkgrey", "grey40")
 palet4 <- c("grey92", "darkgrey", "grey40", "grey10")
@@ -50,9 +52,7 @@ head(df3)
 
 # descriptive statistics
 
-# install.packages("writexl")
-require(writexl)
-write_xlsx(df3,"penstat15.xlsx")
+write_xlsx(df3,"penstat15.xlsx") # package "writexl"
 
 # penres explorative ------------------------------------------------------
 
@@ -175,81 +175,115 @@ uni$var[uni$var == 9] <- "C"
 uni$var[uni$var == 10] <- "SOL"
 
 unil <- uni %>% 
-  select(seas, var, unitd)
+  select(seas, var, abs, unitd) %>% 
+  mutate(ud = unitd*100) %>% 
+  mutate(kn = abs/1000) # kn = kiloNewton
 
-u15 <- uni %>% 
-  filter(seas == 2015)
+# u15 <- uni %>% 
+#   filter(seas == 2015)
+# 
+# u17 <- uni %>% 
+#   filter(seas == 2017)
+# 
+# u15l <- u15 %>% 
+#   select(var, unitd)
+# 
+# u17l <- u17 %>% 
+#   select(var, unitd)
 
-u17 <- uni %>% 
-  filter(seas == 2017)
+# unitd errorbars calc ----------------------------------------------------
 
-u15l <- u15 %>% 
-  select(var, unitd)
+df5 <- data_summary(unil, varname="ud", # percentage
+                    groupnames=c("seas", "var"))
+# Convert dose to a factor variable
+df5$var=as.factor(df5$var)
+df5$seas <- factor(df5$seas)
+head(df5)
 
-u17l <- u17 %>% 
-  select(var, unitd)
+# write_xlsx(df5,"unitdstat.xlsx")
+
+df6 <- data_summary(unil, varname="kn", # absolute values kN
+                    groupnames=c("seas", "var"))
+# Convert dose to a factor variable
+df6$var=as.factor(df6$var)
+df6$seas <- factor(df6$seas)
+head(df6)
+
+write_xlsx(df6,"unitdstat.xlsx")
 
 # unitd explorative -------------------------------------------------------
 
-# both years
+# all three years PERCENTAGE
 
-unil$unitd <- unil$unitd*100
-unil$seas <- factor(unil$seas)
-
-
-ggplot(unil, aes(var, unitd, fill = seas))+
-  geom_bar(aes(width = 0.5),stat = "summary", fun.y = "mean",
+ggplot(df5, aes(var, ud, fill = seas))+
+  geom_bar(stat = "identity", color="black", 
            position = position_dodge())+
-  scale_fill_manual(values=c("darkgrey", "grey30"))+
+  geom_errorbar(aes(ymin=ud-sd, ymax=ud+sd), width=.2,
+                position=position_dodge(.9))+
+  scale_fill_manual(values = palet3)+
   labs(y = "Unit Draft [%]", x = "", fill = "", title = "")+
-  theme_minimal()
-ggsave("unitd_both_percentage.png", device = "png", width = 6, height = 3, dpi = 500)
+  theme_minimal(base_size = 15)
+# ggsave("plots/unitd_se_percentage.png", device = "png", width = 8, height = 5, dpi = 500)
 
-# single year
+# all three years ABSOLUTE VALUES
 
-unil$id <- paste(unil$seas, unil$var, sep="_") # vytvoreni sloupce ID ze sloupců 
-unil$id <- factor(unil$id)
+ggplot(df6, aes(var, kn, fill = seas))+
+  geom_bar(stat = "identity", color="black", 
+           position = position_dodge())+
+  geom_errorbar(aes(ymin=kn-sd, ymax=kn+sd), width=.2,
+                position=position_dodge(.9))+
+  scale_fill_manual(values = palet3)+
+  labs(y = expression("Unit Draft [ kN"~ m^-2~"]"), 
+       x = "", fill = "", title = "")+
+  theme_minimal(base_size = 15)
+# ggsave("plots/unitd_se_absolute_kN.png", device = "png", width = 8, height = 5, dpi = 500)
 
-ggplot(unil, aes(x = var, y = unitd, fill = id)) + 
-  geom_col(aes(width = 0.5))+
-  labs(y = "Unit Draft [%]", x = "", fill = "", title = "2015")+
-  ylim(0, 105)+
-  theme_minimal() 
-ggsave("unitd15_percentage.png", device = "png", width = 6, height = 3, dpi = 500)
 
-# p15l$depth <- factor(p15l$depth, levels = c("cm20", "cm16", "cm12", "cm8", "cm4"), labels = dept)
-# p17l$depth <- factor(p17l$depth, levels = c("cm20", "cm16", "cm12", "cm8", "cm4"), labels = dept)
-
-u15l$unitd <- u15l$unitd * 100
-u17l$unitd <- u17l$unitd * 100
-
-# u15 issue - control mean is not 100 % - why?
-
-u15$unitd <- u15$unitd * 100
-
-u15 %>% 
-  group_by(var) %>% 
-  summarise(mean = mean(unitd)) %>% 
-  ggplot(aes(x = var, y = mean)) + 
-  geom_col(aes(width = 0.5))+
-  labs(y = "Unit Draft [%]", x = "", fill = "", title = "2015")+
-  ylim(0, 105)+
-  theme_minimal() 
-
-ggsave("unitd15_percentage.png", device = "png", width = 6, height = 3, dpi = 500)
-
-u17$unitd <- u17$unitd * 100
-
-u17 %>% 
-  group_by(var) %>% 
-  summarise(mean = mean(unitd)) %>% 
-  ggplot(aes(x = var, y = mean)) + 
-  geom_col(aes(width = 0.5))+
-  labs(y = "Unit Draft [%]", x = "", fill = "", title = "2017")+
-  ylim(0, 120)+
-  theme_minimal() 
-
-ggsave("unitd17_percentage.png", device = "png", width = 6, height = 3, dpi = 500)
+# # single year
+# 
+# unil$id <- paste(unil$seas, unil$var, sep="_") # vytvoreni sloupce ID ze sloupců 
+# unil$id <- factor(unil$id)
+# 
+# ggplot(unil, aes(x = var, y = unitd, fill = id)) + 
+#   geom_col(aes(width = 0.5))+
+#   labs(y = "Unit Draft [%]", x = "", fill = "", title = "2015")+
+#   ylim(0, 105)+
+#   theme_minimal() 
+# ggsave("unitd15_percentage.png", device = "png", width = 6, height = 3, dpi = 500)
+# 
+# # p15l$depth <- factor(p15l$depth, levels = c("cm20", "cm16", "cm12", "cm8", "cm4"), labels = dept)
+# # p17l$depth <- factor(p17l$depth, levels = c("cm20", "cm16", "cm12", "cm8", "cm4"), labels = dept)
+# 
+# u15l$unitd <- u15l$unitd * 100
+# u17l$unitd <- u17l$unitd * 100
+# 
+# # u15 issue - control mean is not 100 % - why?
+# 
+# u15$unitd <- u15$unitd * 100
+# 
+# u15 %>% 
+#   group_by(var) %>% 
+#   summarise(mean = mean(unitd)) %>% 
+#   ggplot(aes(x = var, y = mean)) + 
+#   geom_col(aes(width = 0.5))+
+#   labs(y = "Unit Draft [%]", x = "", fill = "", title = "2015")+
+#   ylim(0, 105)+
+#   theme_minimal() 
+# 
+# ggsave("unitd15_percentage.png", device = "png", width = 6, height = 3, dpi = 500)
+# 
+# u17$unitd <- u17$unitd * 100
+# 
+# u17 %>% 
+#   group_by(var) %>% 
+#   summarise(mean = mean(unitd)) %>% 
+#   ggplot(aes(x = var, y = mean)) + 
+#   geom_col(aes(width = 0.5))+
+#   labs(y = "Unit Draft [%]", x = "", fill = "", title = "2017")+
+#   ylim(0, 120)+
+#   theme_minimal() 
+# 
+# ggsave("unitd17_percentage.png", device = "png", width = 6, height = 3, dpi = 500)
 
 # ggplot(u15l, aes(var, unitd))+
 #   geom_bar(aes(width = 0.5), stat = "summary", fun.y = "mean")+
@@ -267,12 +301,28 @@ ggsave("unitd17_percentage.png", device = "png", width = 6, height = 3, dpi = 50
 
 # unitd analysis ----------------------------------------------------------
 
-pairwise.wilcox.test(u15$unitd, u15$var,
+u15 <- uni %>%
+  filter(seas == 2015) %>% 
+  select(var, abs)
+
+u16 <- uni %>%
+  filter(seas == 2016) %>% 
+  select(var, abs)
+
+u17 <- uni %>%
+  filter(seas == 2017) %>% 
+  select(var, abs)
+
+
+pairwise.wilcox.test(u15$abs, u15$var,
                      p.adjust.method = "BH")
 # significant difference is where p-value < 0.05
 # diff everywhere except Var 4 & control
 
-pairwise.wilcox.test(u17$unitd, u17$var,
+pairwise.wilcox.test(u16$abs, u16$var,
+                     p.adjust.method = "BH")
+
+pairwise.wilcox.test(u17$abs, u17$var,
                      p.adjust.method = "BH")
 
 # INFILTRATION (KFS) ------------------------------------------------------------
