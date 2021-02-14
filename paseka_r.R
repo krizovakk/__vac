@@ -3,14 +3,17 @@
 # install.packages("tidyverse")
 # install.packages("readxl")
 # install.packages("reshape2")
+# install.packages("psych")
+
 require(tidyverse)
 require(readxl)
 require(reshape2)
+require(psych)
 
 palet3 <- c("grey92", "darkgrey", "grey40")
 palet4 <- c("grey92", "darkgrey", "grey40", "grey10")
 
-data_summary <- function(data, varname, groupnames){
+data_summary <- function(data, varname, groupnames){ # funkce pro výpočet errorbars
   require(plyr)
   summary_func <- function(x, col){
     c(mean = mean(x[[col]], na.rm=TRUE),
@@ -31,18 +34,25 @@ pen$var[pen$var == 8] <- "ZF_SOL"
 pen$var[pen$var == 9] <- "C"
 pen$var[pen$var == 10] <- "SOL"
 
-# # penl <- pen %>% 
-#   select(seas, var, cm4, cm8, cm12, cm16, cm20) %>% 
-#   melt(id.vars = c("seas", "var"), variable.name = ("depth"), value.name = "penres")
+penl <- pen %>%
+  select(seas, var, cm4, cm8, cm12, cm16, cm20) %>%
+  melt(id.vars = c("seas", "var"), variable.name = ("depth"), value.name = "penres")
 
 # penres errorbar comp ----------------------------------------------------
 
 df3 <- data_summary(penl, varname="penres", 
                     groupnames=c("seas", "var", "depth"))
+
 # Convert dose to a factor variable
 df3$var=as.factor(df3$var)
 df3$seas <- factor(df3$seas)
 head(df3)
+
+# descriptive statistics
+
+# install.packages("writexl")
+require(writexl)
+write_xlsx(df3,"penstat15.xlsx")
 
 # penres explorative ------------------------------------------------------
 
@@ -274,8 +284,8 @@ inf$var[inf$var == 8] <- "ZF_SOL"
 inf$var[inf$var == 9] <- "C"
 inf$var[inf$var == 10] <- "SOL"
 
-# infl <- inf %>%
-#   select(seas, var, inf)
+infl <- inf %>%
+  select(seas, var, inf)
 
 # inf errorbar comp -------------------------------------------------------
 
@@ -285,6 +295,8 @@ df2 <- data_summary(infl, varname="inf",
 df2$var=as.factor(df2$var)
 df2$seas <- factor(df2$seas)
 head(df2)
+
+write_xlsx(df2,"infstat15.xlsx")
 
 # inf explorative ---------------------------------------------------------
 
@@ -336,6 +348,9 @@ pairwise.wilcox.test(i15$inf, i15$var,
 # significant difference is where p-value < 0.05
 # diff everywhere except Var 4 & control
 
+pairwise.wilcox.test(i16$inf, i16$var,
+                     p.adjust.method = "BH")
+
 pairwise.wilcox.test(i17$inf, i17$var,
                      p.adjust.method = "BH")
 
@@ -348,8 +363,8 @@ rbd$var[rbd$var == 8] <- "ZF_SOL"
 rbd$var[rbd$var == 9] <- "C"
 rbd$var[rbd$var == 10] <- "SOL"
 
-# rbdl <- rbd %>% 
-#   select(var, seas, rbd)
+rbdl <- rbd %>%
+  select(var, seas, rbd)
 
 # rbd errorbar comp -------------------------------------------------------
 
@@ -359,6 +374,9 @@ df4 <- data_summary(rbdl, varname="rbd",
 df4$var=as.factor(df4$var)
 df4$seas <- factor(df4$seas)
 head(df4)
+
+write_xlsx(df4,"rbdstat15.xlsx")
+
 
 # rbd explorative ---------------------------------------------------------
 
