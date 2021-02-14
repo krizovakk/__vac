@@ -8,6 +8,7 @@ require(readxl)
 require(reshape2)
 
 palet3 <- c("grey92", "darkgrey", "grey40")
+palet4 <- c("grey92", "darkgrey", "grey40", "grey10")
 
 data_summary <- function(data, varname, groupnames){
   require(plyr)
@@ -120,6 +121,23 @@ pairwise.wilcox.test(p15$cm16, p15$var,
 pairwise.wilcox.test(p15$cm20, p15$var,
                      p.adjust.method = "BH")
 
+#2016
+
+  pairwise.wilcox.test(p16$cm4, p16$var,
+                       p.adjust.method = "BH")
+  
+  pairwise.wilcox.test(p16$cm8, p16$var,
+                       p.adjust.method = "BH")
+  
+  pairwise.wilcox.test(p16$cm12, p16$var,
+                       p.adjust.method = "BH")
+  
+  pairwise.wilcox.test(p16$cm16, p16$var,
+                       p.adjust.method = "BH")
+  
+  pairwise.wilcox.test(p16$cm20, p16$var,
+                       p.adjust.method = "BH")
+  
 #2017
 
   pairwise.wilcox.test(p17$cm4, p17$var,
@@ -367,15 +385,16 @@ met <- met %>%
   melt(id.vars = c("month"), variable.name = ("year"), value.name = "rain")
 
 ggplot(met, aes(month, rain, fill=year))+
-  geom_bar(stat="identity", position=position_dodge())+
-  scale_fill_manual(values=c("grey90", "grey70", "grey50", "grey1"), 
+  geom_bar(stat="identity", color = "black", 
+           position=position_dodge())+
+  scale_fill_manual(values = palet4, 
                     name = "", 
                     labels = c("2015", "2016", "2017", 
                                "longterm normal (1981-2010)"))+
   labs(y = "Sum of Precipitation [mm]", x = "", fill = "")+
-  theme_minimal()+
+  theme_minimal(base_size = 15)+
   theme(legend.position="top")
-# ggsave("meteo.png", device = "png", width = 6, height = 4, dpi = 500)
+ggsave("plots/meteo.png", device = "png", width = 8, height = 5, dpi = 500)
 
 # CZ labels for VAC / 17/11/20 --------------------------------------------
 
