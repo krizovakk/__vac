@@ -202,7 +202,7 @@ head(df5)
 
 # write_xlsx(df5,"unitdstat.xlsx")
 
-df6 <- data_summary(unil, varname="kn", # absolute values kN
+df6 <- data_summary(unil, varname="kn", # absolute values in kN
                     groupnames=c("seas", "var"))
 # Convert dose to a factor variable
 df6$var=as.factor(df6$var)
