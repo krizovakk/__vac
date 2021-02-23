@@ -363,6 +363,8 @@ ggsave("plots/rbd_se.png", device = "png", width = 8, height = 4, dpi = 300)
 
 # METEO -------------------------------------------------------------------
 
+# waiting for data, below OLDER script
+
 met <- read_excel("red/meteo.xlsx")
 colnames(met) [1] <- "month"
 
@@ -382,4 +384,173 @@ ggplot(met, aes(month, rain, fill=year))+
   theme_minimal(base_size = 15)+
   theme(legend.position="top")
 ggsave("plots/meteo.png", device = "png", width = 8, height = 5, dpi = 300)
+
+# RS NDVI -----------------------------------------------------------------
+
+rs18 <- read_excel("red/2018_results.xlsx")
+rs19 <- read_excel("red/2019_results.xlsx")
+rs20 <- read_excel("red/2020_results.xlsx")
+
+term18 <- read_excel("red/2018_terminy.xlsx")
+term19 <- read_excel("red/2019_terminy.xlsx")
+term20 <- read_excel("red/2020_terminy.xlsx")
+
+rsl18 <- rs18 %>% 
+  melt(id.vars = c("var", "pixid"), variable.name = "term", value.name = "ndvi")
+rsl19 <- rs19 %>% 
+  melt(id.vars = c("var", "pixid"), variable.name = "term", value.name = "ndvi")
+rsl20 <- rs20 %>% 
+  melt(id.vars = c("var", "pixid"), variable.name = "term", value.name = "ndvi")
+
+# rs explorative ----------------------------------------------------------
+
+paletblue <- c("azure3", "lightskyblue", "blue3")
+
+# 2018
+
+rsl18$var <- as.factor(rsl18$var)
+rsl18$term <- factor(rsl18$term, 
+                        labels = c( 
+                          "2018-04-19", "2018-04-21", "2018-04-29",
+                          "2018-05-04", "2018-05-21", "2018-05-26",
+                          "2018-07-03", "2018-07-05", "2018-08-22",
+                          "2018-08-27", "2018-08-29", "2018-09-18",
+                          "2018-09-28", "2018-10-11", "2018-10-16", "2018-10-18"))
+
+
+ggplot(rsl18, aes(term, ndvi, fill = var))+
+  geom_boxplot()+
+  scale_fill_manual(values = paletblue)+
+  labs(y = "NDVI", x = "", fill = "", title = "")+
+  theme_classic(base_size = 15)+
+  theme(text=element_text(family="Times New Roman"), legend.position="top",
+        axis.text.x = element_text(angle = 90))
+# ggsave("plots/18ndvi.png", device = "png", width = 8, height = 5, dpi = 300)
+
+# 2019
+
+rsl19$var <- as.factor(rsl19$var)
+rsl19$term <- factor(rsl19$term, 
+                     labels = c("2019-04-01", "2019-04-04", "2019-04-21",
+                                "2019-05-26", "2019-06-03", "2019-06-05", "2019-06-15"))
+
+ggplot(rsl19, aes(term, ndvi, fill = var))+
+  geom_boxplot()+
+  scale_fill_manual(values = paletblue)+
+  labs(y = "NDVI", x = "", fill = "", title = "")+
+  theme_classic(base_size = 15)+
+  theme(text=element_text(family="Times New Roman"), legend.position="top",
+        axis.text.x = element_text(angle = 90))
+# ggsave("plots/19ndvi.png", device = "png", width = 8, height = 5, dpi = 300)
+
+# 2020
+
+rsl20$var <- as.factor(rsl20$var)
+rsl20$term <- factor(rsl20$term,
+                     labels = c("2019-10-31", "2019-11-30", "2020-03-24", 
+                                "2020-03-29", "2020-04-05", "2020-04-08",
+                                "2020-04-20", "2020-04-23", "2020-04-28",
+                                "2020-05-08", "2020-05-18", "2020-06-22", "2020-06-27"))
+
+ggplot(rsl20, aes(term, ndvi, fill = var))+
+  geom_boxplot()+
+  scale_fill_manual(values = paletblue)+
+  labs(y = "NDVI", x = "", fill = "", title = "")+
+  theme_classic(base_size = 15)+
+  theme(text=element_text(family="Times New Roman"), legend.position="top",
+        axis.text.x = element_text(angle = 90))
+# ggsave("plots/20ndvi.png", device = "png", width = 8, height = 5, dpi = 300)
+
+# rs analysis -------------------------------------------------------------
+
+## KW non-parametric ANOVA-like test
+
+kruskal.test(ndvi ~ var, data = rsl18)
+kruskal.test(ndvi ~ var, data = rsl19)
+kruskal.test(ndvi ~ var, data = rsl20)
+
+# install.packages("pgirmess")
+require(pgirmess)
+
+kruskalmc(ndvi ~ var, data = rsl18, p=0.05)
+kruskalmc(ndvi ~ var, data = rsl19, p=0.05)
+kruskalmc(ndvi ~ var, data = rsl20, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(ndvi ~ var, data = rsl18) # homognita varianci splnena
+simp18 <- aov(ndvi ~ var, data = rsl18)
+simp19 <- aov(ndvi ~ var, data = rsl19)
+simp20 <- aov(ndvi ~ var, data = rsl20)
+summary(simp18)
+summary(simp19)
+summary(simp20)
+TukeyHSD(simp18)
+TukeyHSD(simp20)
+# plot(TukeyHSD(simp18))
+# plot(TukeyHSD(simp20))
+
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(simp18, linfct=mcp(var="Tukey")))
+summary(glht(simp20, linfct=mcp(var="Tukey")))
+
+## ANOVA with random effects
+
+# testovani homogenity varianci
+# variance chceme mit homogenni (tzn. p-value > 0.05)
+# pokud neni splneno, lze pouzit logartimickou transformaci
+
+bartlett.test(ndvi ~ var, data = rsl18) # p-value = 0.2499 = homogenni
+bartlett.test(ndvi ~ var, data = rsl19) # p-value = 0.1052
+bartlett.test(ndvi ~ var, data = rsl20) # p-value < 2.2e-16 = homgenita zamitnuta, variance se lisi
+bartlett.test(log(ndvi) ~ var, data = rsl20) # p-value < 2.2e-16 -> nelze pouzit param test!
+
+# ANOVA pomerne robustni vuci naruseni predpokladu ve velkych souborech
+# dulezite je spise chovani rezidualu
+
+## https://rcompanion.org/handbook/G_03.html
+
+if(!require(FSA)){install.packages("FSA")}
+if(!require(psych)){install.packages("psych")}
+if(!require(lme4)){install.packages("lme4")}
+if(!require(lmerTest)){install.packages("lmerTest")}
+if(!require(nlme)){install.packages("nlme")}
+if(!require(car)){install.packages("car")}
+
+library(lme4)
+library(lmerTest)
+
+rm18 = lmer(ndvi ~ var + (1|term),
+             data=rsl18,
+             REML=TRUE)
+
+rm19 = lmer(ndvi ~ var + (1|term),
+             data=rsl19,
+             REML=TRUE)
+
+rm20 = lmer(ndvi ~ var + (1|term),
+             data=rsl20,
+             REML=TRUE)
+
+anova(rm18)
+summary(rm18)
+rand(rm18)
+
+anova(rm19)
+summary(rm19)
+rand(rm19)
+
+anova(rm20)
+summary(rm20)
+rand(rm20)
+
+# install.packages("emmeans") # for multiple comparisons
+library(emmeans)
+
+emmeans(rm18, list(pairwise ~ var), adjust = "tukey")
+emmeans(rm19, list(pairwise ~ var), adjust = "tukey")
+emmeans(rm20, list(pairwise ~ var), adjust = "tukey")
+
+
 
