@@ -1020,8 +1020,8 @@ TukeyHSD(msol_hc)
 rs18 <- read_excel("red/Results_2018.xlsx")
 rs20 <- read_excel("red/Results_20.xlsx")
 
-term18 <- read_excel("red/Sus_18.xlsx")
-term20 <- read_excel("red/Sus_20.xlsx")
+# term18 <- read_excel("red/Sus_18.xlsx")
+# term20 <- read_excel("red/Sus_20.xlsx")
 
 rsl18 <- rs18 %>% 
   melt(id.vars = c("pixid","var"), variable.name = "term", value.name = "ndvi") %>% 
@@ -1031,11 +1031,7 @@ rsl20 <- rs20 %>%
   melt(id.vars = c("pixid","var"), variable.name = "term", value.name = "ndvi") %>% 
   select(var, term, ndvi)
 
-# rs explorative ----------------------------------------------------------
-
-tenpalet <- 
-
-# 2018
+# cycle 2 
 
 rsl18$var <- as.factor(rsl18$var)
 rsl18$term <- factor(rsl18$term, 
@@ -1048,6 +1044,29 @@ ggpra <- rsl18 %>%
   filter(var %in% c("pFYM", "pFYM_SOL", "pFYM_ZF", "pFYM_ZF_SOL"))
 ggnpk <- rsl18 %>% 
   filter(var %in% c("cFYM", "pFYM", "SOL", "NPK"))
+
+rsl20$var <- as.factor(rsl20$var)
+rsl20$term <- factor(rsl20$term, 
+                     labels = c("2019-10-31", "2019-11-07", "2019-11-30",
+                                "2019-12-20", "2020-01-01", "2020-02-05",
+                                "2020-03-24", "2020-03-29", "2020-04-05", 
+                                "2020-04-08", "2020-04-18", "2020-04-20",
+                                "2020-04-23", "2020-04-28", "2020-05-08",
+                                "2020-05-18", "2020-06-22", "2020-06-27"))
+# cycle 3
+
+ggkra2 <- rsl20 %>% 
+  filter(var %in% c("cFYM", "cFYM_SOL", "cFYM_ZF", "cFYM_ZF_SOL"))
+ggpra2 <- rsl20 %>% 
+  filter(var %in% c("pFYM", "pFYM_SOL", "pFYM_ZF", "pFYM_ZF_SOL"))
+ggnpk2 <- rsl20 %>% 
+  filter(var %in% c("cFYM", "pFYM", "SOL", "NPK"))
+
+# rs explorative ----------------------------------------------------------
+
+tenpalet <- 
+
+# 2018
 
 ggplot(ggkra, aes(term, ndvi, fill = var))+
   geom_boxplot()+
@@ -1078,22 +1097,7 @@ ggsave("plots/npk18ndvi.png", device = "png", width = 7, height = 4, dpi = 300)
 
 # 2020
 
-rsl20$var <- as.factor(rsl20$var)
-rsl20$term <- factor(rsl20$term, 
-                     labels = c("2019-10-31", "2019-11-07", "2019-11-30",
-                                "2019-12-20", "2020-01-01", "2020-02-05",
-                                "2020-03-24", "2020-03-29", "2020-04-05", 
-                                "2020-04-08", "2020-04-18", "2020-04-20",
-                                "2020-04-23", "2020-04-28", "2020-05-08",
-                                "2020-05-18", "2020-06-22", "2020-06-27"))
 
-
-ggkra2 <- rsl20 %>% 
-  filter(var %in% c("cFYM", "cFYM_SOL", "cFYM_ZF", "cFYM_ZF_SOL"))
-ggpra2 <- rsl20 %>% 
-  filter(var %in% c("pFYM", "pFYM_SOL", "pFYM_ZF", "pFYM_ZF_SOL"))
-ggnpk2 <- rsl20 %>% 
-  filter(var %in% c("cFYM", "pFYM", "SOL", "NPK"))
 
 
 ggplot(ggkra2, aes(term, ndvi, fill = var))+
@@ -1127,35 +1131,56 @@ ggsave("plots/npk20ndvi.png", device = "png", width = 7, height = 4, dpi = 300)
 
 ## KW non-parametric ANOVA-like test
 
-kruskal.test(ndvi ~ var, data = rsl18)
-kruskal.test(ndvi ~ var, data = rsl19)
-kruskal.test(ndvi ~ var, data = rsl20)
+kruskal.test(ndvi ~ var, data = ggkra)
+kruskal.test(ndvi ~ var, data = ggpra)
+kruskal.test(ndvi ~ var, data = ggnpk)
 
-# install.packages("pgirmess")
-require(pgirmess)
+kruskal.test(ndvi ~ var, data = ggkra2)
+kruskal.test(ndvi ~ var, data = ggpra2)
+kruskal.test(ndvi ~ var, data = ggnpk2)
 
-kruskalmc(ndvi ~ var, data = rsl18, p=0.05)
-kruskalmc(ndvi ~ var, data = rsl19, p=0.05)
-kruskalmc(ndvi ~ var, data = rsl20, p=0.05)
+# # install.packages("pgirmess")
+# require(pgirmess)
+# 
+# kruskalmc(ndvi ~ var, data = rsl18, p=0.05)
+# kruskalmc(ndvi ~ var, data = rsl19, p=0.05)
+# kruskalmc(ndvi ~ var, data = rsl20, p=0.05)
 
 ## one way ANOVA
 
-bartlett.test(ndvi ~ var, data = rsl18) # homognita varianci splnena
-simp18 <- aov(ndvi ~ var, data = rsl18)
-simp19 <- aov(ndvi ~ var, data = rsl19)
-simp20 <- aov(ndvi ~ var, data = rsl20)
-summary(simp18)
-summary(simp19)
-summary(simp20)
-TukeyHSD(simp18)
-TukeyHSD(simp20)
+bartlett.test(ndvi ~ var, data = ggkra) 
+bartlett.test(ndvi ~ var, data = ggpra) 
+bartlett.test(ndvi ~ var, data = ggnpk) 
+
+bartlett.test(ndvi ~ var, data = ggkra2) 
+bartlett.test(ndvi ~ var, data = ggpra2) 
+bartlett.test(ndvi ~ var, data = ggnpk) 
+
+simpkra <- aov(ndvi ~ var, data = ggkra)
+simppra <- aov(ndvi ~ var, data = ggpra)
+simpnpk <- aov(ndvi ~ var, data = ggnpk)
+
+simpkra2 <- aov(ndvi ~ var, data = ggkra2)
+simppra2 <- aov(ndvi ~ var, data = ggpra2)
+simpnpk2 <- aov(ndvi ~ var, data = ggnpk2)
+
+summary(simpkra)
+summary(simppra)
+summary(simpnpk)
+
+summary(simpkra2)
+summary(simppra2)
+summary(simpnpk2) # vse neprukazne
+
+# TukeyHSD(simp18)
+# TukeyHSD(simp20)
 # plot(TukeyHSD(simp18))
 # plot(TukeyHSD(simp20))
 
 # install.packages("multcomp")
-require(multcomp)
-summary(glht(simp18, linfct=mcp(var="Tukey")))
-summary(glht(simp20, linfct=mcp(var="Tukey")))
+# require(multcomp)
+# summary(glht(simp18, linfct=mcp(var="Tukey")))
+# summary(glht(simp20, linfct=mcp(var="Tukey")))
 
 ## ANOVA with random effects
 
@@ -1183,33 +1208,55 @@ if(!require(car)){install.packages("car")}
 library(lme4)
 library(lmerTest)
 
-rm18 = lmer(ndvi ~ var + (1|term),
-            data=rsl18,
+rmkra = lmer(ndvi ~ var + (1|term),
+            data=ggkra,
             REML=TRUE)
 
-rm19 = lmer(ndvi ~ var + (1|term),
-            data=rsl19,
+rmpra = lmer(ndvi ~ var + (1|term),
+            data=ggpra,
             REML=TRUE)
 
-rm20 = lmer(ndvi ~ var + (1|term),
-            data=rsl20,
+rmnpk = lmer(ndvi ~ var + (1|term),
+            data=ggnpk,
             REML=TRUE)
 
-anova(rm18)
-summary(rm18)
-rand(rm18)
+rmkra2 = lmer(ndvi ~ var + (1|term),
+            data=ggkra2,
+            REML=TRUE)
 
-anova(rm19)
-summary(rm19)
-rand(rm19)
+rmpra2 = lmer(ndvi ~ var + (1|term),
+            data=ggpra2,
+            REML=TRUE)
 
-anova(rm20)
-summary(rm20)
-rand(rm20)
+rmnpk2 = lmer(ndvi ~ var + (1|term),
+            data=ggnpk2,
+            REML=TRUE)
+
+anova(rmkra)
+summary(rmkra)
+
+anova(rmpra)
+summary(rmpra)
+
+anova(rmnpk)
+summary(rmnpk) 
+
+anova(rmkra2)
+summary(rmkra2)
+
+anova(rmpra2)
+summary(rmpra2)
+
+anova(rmnpk2)
+summary(rmnpk2)
 
 # install.packages("emmeans") # for multiple comparisons
 library(emmeans)
 
-emmeans(rm18, list(pairwise ~ var), adjust = "tukey")
-emmeans(rm19, list(pairwise ~ var), adjust = "tukey")
-emmeans(rm20, list(pairwise ~ var), adjust = "tukey")
+emmeans(rmkra, list(pairwise ~ var), adjust = "tukey")
+emmeans(rmpra, list(pairwise ~ var), adjust = "tukey")
+emmeans(rmnpk, list(pairwise ~ var), adjust = "tukey")
+
+emmeans(rmkra2, list(pairwise ~ var), adjust = "tukey")
+emmeans(rmpra2, list(pairwise ~ var), adjust = "tukey")
+emmeans(rmnpk2, list(pairwise ~ var), adjust = "tukey")
