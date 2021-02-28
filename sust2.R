@@ -86,9 +86,51 @@ ggplot(df1, aes(depth, penres, fill=var))+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/kra_pr.png", device = "png", width = 8, height = 4, dpi = 300)
 
+# analyses
+
+c1_krapr <- kra_prl %>% 
+  filter(year == "cycle 1")
+c2_krapr <- kra_prl %>% 
+  filter(year == "cycle 2")
+c3_krapr <- kra_prl %>% 
+  filter(year == "cycle 3")
+
 # kw 
 
+kruskal.test(penres ~ var, data = c1_krapr)
+kruskal.test(penres ~ var, data = c2_krapr)
+kruskal.test(penres ~ var, data = c3_krapr)
 
+# install.packages("pgirmess") # post-hoc testy
+require(pgirmess)
+
+kruskalmc(penres ~ var, data = c1_krapr, p=0.05)
+kruskalmc(penres ~ var, data = c2_krapr, p=0.05)
+kruskalmc(penres ~ var, data = c3_krapr, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(penres ~ var, data = c1_krapr) 
+bartlett.test(penres ~ var, data = c2_krapr) 
+bartlett.test(penres ~ var, data = c3_krapr) 
+
+simpkraprc1 <- aov(penres ~ var, data = c1_krapr)
+simpkraprc2 <- aov(penres ~ var, data = c2_krapr)
+simpkraprc3 <- aov(penres ~ var, data = c3_krapr)
+
+summary(simpkraprc1)
+summary(simpkraprc2)
+summary(simpkraprc3)
+
+# TukeyHSD(simp18)
+# TukeyHSD(simp20)
+# plot(TukeyHSD(simp18))
+# plot(TukeyHSD(simp20))
+
+# install.packages("multcomp")
+# require(multcomp)
+# summary(glht(simp18, linfct=mcp(var="Tukey")))
+# summary(glht(simp20, linfct=mcp(var="Tukey")))
 
 # prase PENRES -------------------------------------------------------------------
 
@@ -134,6 +176,52 @@ ggplot(df2, aes(depth, penres, fill=var))+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/pra_pr.png", device = "png", width = 8, height = 4, dpi = 300)
 
+# analyses
+
+c1_prapr <- pra_prl %>% 
+  filter(year == "cycle 1")
+c2_prapr <- pra_prl %>% 
+  filter(year == "cycle 2")
+c3_prapr <- pra_prl %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(penres ~ var, data = c1_prapr)
+kruskal.test(penres ~ var, data = c2_prapr)
+kruskal.test(penres ~ var, data = c3_prapr)
+
+# install.packages("pgirmess") # post-hoc testy
+require(pgirmess)
+
+kruskalmc(penres ~ var, data = c1_prapr, p=0.05)
+kruskalmc(penres ~ var, data = c2_prapr, p=0.05)
+kruskalmc(penres ~ var, data = c3_prapr, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(penres ~ var, data = c1_prapr) 
+bartlett.test(penres ~ var, data = c2_prapr) 
+bartlett.test(penres ~ var, data = c3_prapr) 
+
+simppraprc1 <- aov(penres ~ var, data = c1_prapr)
+simppraprc2 <- aov(penres ~ var, data = c2_prapr)
+simppraprc3 <- aov(penres ~ var, data = c3_prapr)
+
+summary(simppraprc1)
+summary(simppraprc2)
+summary(simppraprc3)
+
+# TukeyHSD(simp18)
+# TukeyHSD(simp20)
+# plot(TukeyHSD(simp18))
+# plot(TukeyHSD(simp20))
+
+# install.packages("multcomp")
+# require(multcomp)
+# summary(glht(simp18, linfct=mcp(var="Tukey")))
+# summary(glht(simp20, linfct=mcp(var="Tukey")))
+
 # npk PENRES -------------------------------------------------------------------
 
 # load
@@ -178,12 +266,55 @@ ggplot(df3, aes(depth, penres, fill=var))+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/npk_pr.png", device = "png", width = 8, height = 4, dpi = 300)
 
+# analyses
+
+c1_npkpr <- npk_prl %>% 
+  filter(year == "cycle 1")
+c2_npkpr <- npk_prl %>% 
+  filter(year == "cycle 2")
+c3_npkpr <- npk_prl %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(penres ~ var, data = c1_npkpr)
+kruskal.test(penres ~ var, data = c2_npkpr)
+kruskal.test(penres ~ var, data = c3_npkpr)
+
+# install.packages("pgirmess") # post-hoc testy
+require(pgirmess)
+
+kruskalmc(penres ~ var, data = c1_npkpr, p=0.05)
+kruskalmc(penres ~ var, data = c2_npkpr, p=0.05)
+kruskalmc(penres ~ var, data = c3_npkpr, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(penres ~ var, data = c1_npkpr) 
+bartlett.test(penres ~ var, data = c2_npkpr) 
+bartlett.test(penres ~ var, data = c3_npkpr) 
+
+simpnpkprc1 <- aov(penres ~ var, data = c1_npkpr)
+simpnpkprc2 <- aov(penres ~ var, data = c2_npkpr)
+simpnpkprc3 <- aov(penres ~ var, data = c3_npkpr)
+
+summary(simpnpkprc1)
+summary(simpnpkprc2)
+summary(simpnpkprc3)
+
+TukeyHSD(simpnpkprc2)
+# plot(TukeyHSD(simp20))
+
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(simpnpkprc2, linfct=mcp(var="Tukey")))
+
 # krava ROH ---------------------------------------------------------------
 
 # load
 
 kra_roh <- roh %>%
-  select(var, varno, year, roh) %>% 
+  select(year, varno, var, roh) %>% 
   filter(varno %in% c("1", "2", "3", "4")) %>% 
   select(var, year, roh)
 
@@ -214,6 +345,48 @@ ggplot(df4, aes(year, roh, fill=var))+
   theme_classic(base_size = 15)+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/kra_roh.png", device = "png", width = 8, height = 4, dpi = 300)
+
+# analyses
+
+c1_kraroh <- kra_roh %>% 
+  filter(year == "cycle 1")
+c2_kraroh <- kra_roh %>% 
+  filter(year == "cycle 2")
+c3_kraroh <- kra_roh %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(roh ~ var, data = c1_kraroh)
+kruskal.test(roh ~ var, data = c2_kraroh)
+kruskal.test(roh ~ var, data = c3_kraroh)
+
+# install.packages("pgirmess") # post-hoc testy
+# require(pgirmess)
+# 
+# kruskalmc(penres ~ var, data = c1_kraroh, p=0.05)
+# kruskalmc(penres ~ var, data = c2_kraroh, p=0.05)
+# kruskalmc(penres ~ var, data = c3_kraroh, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(roh ~ var, data = c1_kraroh) 
+bartlett.test(roh ~ var, data = c2_kraroh) 
+bartlett.test(roh ~ var, data = c3_kraroh) 
+
+simpkrarohc1 <- aov(roh ~ var, data = c1_kraroh)
+simpkrarohc2 <- aov(roh ~ var, data = c2_kraroh)
+simpkrarohc3 <- aov(roh ~ var, data = c3_kraroh)
+
+summary(simpkrarohc1)
+summary(simpkrarohc2)
+summary(simpkrarohc3)
+
+# TukeyHSD(simpkrarohc2)
+# plot(TukeyHSD(simp20))
+# install.packages("multcomp")
+# require(multcomp)
+# summary(glht(simpkraprc2, linfct=mcp(var="Tukey")))
 
 # prase ROH ---------------------------------------------------------------
 
@@ -253,6 +426,49 @@ ggplot(df5, aes(year, roh, fill=var))+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/pra_roh.png", device = "png", width = 8, height = 4, dpi = 300)
 
+# analyses
+
+c1_praroh <- pra_roh %>% 
+  filter(year == "cycle 1")
+c2_praroh <- pra_roh %>% 
+  filter(year == "cycle 2")
+c3_praroh <- pra_roh %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(roh ~ var, data = c1_praroh)
+kruskal.test(roh ~ var, data = c2_praroh)
+kruskal.test(roh ~ var, data = c3_praroh)
+
+# install.packages("pgirmess") # post-hoc testy
+# require(pgirmess)
+# 
+# kruskalmc(penres ~ var, data = c1_prapr, p=0.05)
+# kruskalmc(penres ~ var, data = c2_prapr, p=0.05)
+# kruskalmc(penres ~ var, data = c3_prapr, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(roh ~ var, data = c1_praroh) 
+bartlett.test(roh ~ var, data = c2_praroh) 
+bartlett.test(roh ~ var, data = c3_praroh) 
+
+simpprarohc1 <- aov(roh ~ var, data = c1_praroh)
+simpprarohc2 <- aov(roh ~ var, data = c2_praroh)
+simpprarohc3 <- aov(roh ~ var, data = c3_praroh)
+
+summary(simpprarohc1)
+summary(simpprarohc2)
+summary(simpprarohc3)
+
+# TukeyHSD(simppraprc2)
+# # plot(TukeyHSD(simp20))
+# 
+# # install.packages("multcomp")
+# require(multcomp)
+# summary(glht(simppraprc2, linfct=mcp(var="Tukey")))
+
 # npk ROH ---------------------------------------------------------------
 
 # load
@@ -291,6 +507,49 @@ ggplot(df6, aes(year, roh, fill=var))+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/npk_roh.png", device = "png", width = 8, height = 4, dpi = 300)
 
+# analyses
+
+c1_npkroh <- npk_roh %>% 
+  filter(year == "cycle 1")
+c2_npkroh <- npk_roh %>% 
+  filter(year == "cycle 2")
+c3_npkroh <- npk_roh %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(roh ~ var, data = c1_npkroh)
+kruskal.test(roh ~ var, data = c2_npkroh)
+kruskal.test(roh ~ var, data = c3_npkroh)
+
+# install.packages("pgirmess") # post-hoc testy
+require(pgirmess)
+
+# kruskalmc(roh ~ var, data = c1_npkroh, p=0.05)
+# kruskalmc(roh ~ var, data = c2_npkroh, p=0.05)
+kruskalmc(roh ~ var, data = c3_npkroh, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(roh ~ var, data = c1_npkroh) 
+bartlett.test(roh ~ var, data = c2_npkroh) 
+bartlett.test(roh ~ var, data = c3_npkroh) 
+
+simpnpkrohc1 <- aov(roh ~ var, data = c1_npkroh)
+simpnpkrohc2 <- aov(roh ~ var, data = c2_npkroh)
+simpnpkrohc3 <- aov(roh ~ var, data = c3_npkroh)
+
+summary(simpnpkrohc1)
+summary(simpnpkrohc2)
+summary(simpnpkrohc3)
+
+TukeyHSD(simpnpkrohc3)
+# plot(TukeyHSD(simp20))
+
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(simpnpkrohc3, linfct=mcp(var="Tukey")))
+
 # krava SFH ----------------------------------------------------------------
 
 # load
@@ -327,6 +586,48 @@ ggplot(df7, aes(year, sfh, fill=var))+
   theme_classic(base_size = 15)+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/kra_sfh.png", device = "png", width = 8, height = 4, dpi = 300)
+
+# analyses
+
+c1_krasfh <- kra_sfh %>% 
+  filter(year == "cycle 1")
+c2_krasfh <- kra_sfh %>% 
+  filter(year == "cycle 2")
+c3_krasfh <- kra_sfh %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(sfh ~ var, data = c1_krasfh)
+kruskal.test(sfh ~ var, data = c2_krasfh)
+kruskal.test(sfh ~ var, data = c3_krasfh)
+
+# install.packages("pgirmess") # post-hoc testy
+# require(pgirmess)
+# 
+# kruskalmc(penres ~ var, data = c1_krasfh, p=0.05)
+# kruskalmc(penres ~ var, data = c2_krasfh, p=0.05)
+# kruskalmc(penres ~ var, data = c3_krasfh, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(sfh ~ var, data = c1_krasfh) 
+bartlett.test(sfh ~ var, data = c2_krasfh) 
+bartlett.test(sfh ~ var, data = c3_krasfh) 
+
+simpkrasfhc1 <- aov(sfh ~ var, data = c1_krasfh)
+simpkrasfhc2 <- aov(sfh ~ var, data = c2_krasfh)
+simpkrasfhc3 <- aov(sfh ~ var, data = c3_krasfh)
+
+summary(simpkrasfhc1)
+summary(simpkrasfhc2)
+summary(simpkrasfhc3)
+
+# TukeyHSD(simpkrasfhc2)
+# plot(TukeyHSD(simp20))
+# install.packages("multcomp")
+# require(multcomp)
+# summary(glht(simpkraprc2, linfct=mcp(var="Tukey")))
 
 # prase SFH ----------------------------------------------------------------
 
@@ -365,6 +666,49 @@ ggplot(df8, aes(year, sfh, fill=var))+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/pra_sfh.png", device = "png", width = 8, height = 4, dpi = 300)
 
+# analyses
+
+c1_prasfh <- pra_sfh %>% 
+  filter(year == "cycle 1")
+c2_prasfh <- pra_sfh %>% 
+  filter(year == "cycle 2")
+c3_prasfh <- pra_sfh %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(sfh ~ var, data = c1_prasfh)
+kruskal.test(sfh ~ var, data = c2_prasfh)
+kruskal.test(sfh ~ var, data = c3_prasfh)
+
+# install.packages("pgirmess") # post-hoc testy
+# require(pgirmess)
+# 
+# kruskalmc(penres ~ var, data = c1_prapr, p=0.05)
+# kruskalmc(penres ~ var, data = c2_prapr, p=0.05)
+# kruskalmc(penres ~ var, data = c3_prapr, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(sfh ~ var, data = c1_prasfh) 
+bartlett.test(sfh ~ var, data = c2_prasfh) 
+bartlett.test(sfh ~ var, data = c3_prasfh) 
+
+simpprasfhc1 <- aov(sfh ~ var, data = c1_prasfh)
+simpprasfhc2 <- aov(sfh ~ var, data = c2_prasfh)
+simpprasfhc3 <- aov(sfh ~ var, data = c3_prasfh)
+
+summary(simpprasfhc1)
+summary(simpprasfhc2)
+summary(simpprasfhc3)
+
+# TukeyHSD(simppraprc2)
+# # plot(TukeyHSD(simp20))
+# 
+# # install.packages("multcomp")
+# require(multcomp)
+# summary(glht(simppraprc2, linfct=mcp(var="Tukey")))
+
 # npk SFH ----------------------------------------------------------------
 
 # load
@@ -401,6 +745,49 @@ ggplot(df9, aes(year, sfh, fill=var))+
   theme_classic(base_size = 15)+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/npk_sfh.png", device = "png", width = 8, height = 4, dpi = 300)
+
+# analyses
+
+c1_npksfh <- npk_sfh %>% 
+  filter(year == "cycle 1")
+c2_npksfh <- npk_sfh %>% 
+  filter(year == "cycle 2")
+c3_npksfh <- npk_sfh %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(sfh ~ var, data = c1_npksfh)
+kruskal.test(sfh ~ var, data = c2_npksfh)
+kruskal.test(sfh ~ var, data = c3_npksfh)
+
+# install.packages("pgirmess") # post-hoc testy
+require(pgirmess)
+
+# kruskalmc(sfh ~ var, data = c1_npksfh, p=0.05)
+# kruskalmc(sfh ~ var, data = c2_npksfh, p=0.05)
+kruskalmc(sfh ~ var, data = c3_npksfh, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(sfh ~ var, data = c1_npksfh) 
+bartlett.test(sfh ~ var, data = c2_npksfh) 
+bartlett.test(sfh ~ var, data = c3_npksfh) 
+
+simpnpksfhc1 <- aov(sfh ~ var, data = c1_npksfh)
+simpnpksfhc2 <- aov(sfh ~ var, data = c2_npksfh)
+simpnpksfhc3 <- aov(sfh ~ var, data = c3_npksfh)
+
+summary(simpnpksfhc1)
+summary(simpnpksfhc2)
+summary(simpnpksfhc3)
+
+TukeyHSD(simpnpksfhc3)
+# plot(TukeyHSD(simp20))
+
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(simpnpksfhc3, linfct=mcp(var="Tukey")))
 
 # krava UD ----------------------------------------------------------------
 
@@ -439,6 +826,48 @@ ggplot(df10, aes(year, udkn, fill=var))+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/kra_ud.png", device = "png", width = 8, height = 4, dpi = 300)
 
+# analyses
+
+c1_kraud <- kra_ud %>% 
+  filter(year == "cycle 1")
+c2_kraud <- kra_ud %>% 
+  filter(year == "cycle 2")
+c3_kraud <- kra_ud %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(udkn ~ var, data = c1_kraud)
+kruskal.test(udkn ~ var, data = c2_kraud)
+kruskal.test(udkn ~ var, data = c3_kraud)
+
+# install.packages("pgirmess") # post-hoc testy
+require(pgirmess)
+# 
+kruskalmc(udkn ~ var, data = c1_kraud, p=0.05)
+# kruskalmc(penres ~ var, data = c2_kraud, p=0.05)
+# kruskalmc(penres ~ var, data = c3_kraud, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(udkn ~ var, data = c1_kraud) 
+bartlett.test(udkn ~ var, data = c2_kraud) 
+bartlett.test(udkn ~ var, data = c3_kraud) 
+
+simpkraudc1 <- aov(udkn ~ var, data = c1_kraud)
+simpkraudc2 <- aov(udkn ~ var, data = c2_kraud)
+simpkraudc3 <- aov(udkn ~ var, data = c3_kraud)
+
+summary(simpkraudc1)
+summary(simpkraudc2)
+summary(simpkraudc3)
+
+TukeyHSD(simpkraudc2)
+# plot(TukeyHSD(simp20))
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(simpkraudc2, linfct=mcp(var="Tukey")))
+
 # prase UD ----------------------------------------------------------------
 
 # load
@@ -476,6 +905,51 @@ ggplot(df11, aes(year, udkn, fill=var))+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/pra_ud.png", device = "png", width = 8, height = 4, dpi = 300)
 
+# analyses
+
+c1_praud <- pra_ud %>% 
+  filter(year == "cycle 1")
+c2_praud <- pra_ud %>% 
+  filter(year == "cycle 2")
+c3_praud <- pra_ud %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(udkn ~ var, data = c1_praud)
+kruskal.test(udkn ~ var, data = c2_praud)
+kruskal.test(udkn ~ var, data = c3_praud)
+
+# install.packages("pgirmess") # post-hoc testy
+require(pgirmess)
+# 
+# kruskalmc(penres ~ var, data = c1_prapr, p=0.05)
+kruskalmc(udkn ~ var, data = c2_praud, p=0.05)
+kruskalmc(udkn ~ var, data = c3_praud, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(udkn ~ var, data = c1_praud) 
+bartlett.test(udkn ~ var, data = c2_praud) 
+bartlett.test(udkn ~ var, data = c3_praud) 
+
+simppraudc1 <- aov(udkn ~ var, data = c1_praud)
+simppraudc2 <- aov(udkn ~ var, data = c2_praud)
+simppraudc3 <- aov(udkn ~ var, data = c3_praud)
+
+summary(simppraudc1)
+summary(simppraudc2)
+summary(simppraudc3)
+
+TukeyHSD(simppraudc2)
+TukeyHSD(simppraudc3)
+# plot(TukeyHSD(simp20))
+
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(simppraudc2, linfct=mcp(var="Tukey")))
+summary(glht(simppraudc2, linfct=mcp(var="Tukey")))
+
 # npk UD ----------------------------------------------------------------
 
 # load
@@ -512,3 +986,51 @@ ggplot(df12, aes(year, udkn, fill=var))+
   theme_classic(base_size = 15)+
   theme(text=element_text(family="Times New Roman"))
 ggsave("plots/npk_ud.png", device = "png", width = 8, height = 4, dpi = 300)
+
+
+# analyses
+
+c1_npkud <- npk_ud %>% 
+  filter(year == "cycle 1")
+c2_npkud <- npk_ud %>% 
+  filter(year == "cycle 2")
+c3_npkud <- npk_ud %>% 
+  filter(year == "cycle 3")
+
+# kw 
+
+kruskal.test(udkn ~ var, data = c1_npkud)
+kruskal.test(udkn ~ var, data = c2_npkud)
+kruskal.test(udkn ~ var, data = c3_npkud)
+
+# install.packages("pgirmess") # post-hoc testy
+require(pgirmess)
+
+kruskalmc(udkn ~ var, data = c1_npkud, p=0.05)
+kruskalmc(udkn ~ var, data = c2_npkud, p=0.05)
+kruskalmc(udkn ~ var, data = c3_npkud, p=0.05)
+
+## one way ANOVA
+
+bartlett.test(udkn ~ var, data = c1_npkud) 
+bartlett.test(udkn ~ var, data = c2_npkud) 
+bartlett.test(udkn ~ var, data = c3_npkud) 
+
+simpnpkudc1 <- aov(udkn ~ var, data = c1_npkud)
+simpnpkudc2 <- aov(udkn ~ var, data = c2_npkud)
+simpnpkudc3 <- aov(udkn ~ var, data = c3_npkud)
+
+summary(simpnpkudc1)
+summary(simpnpkudc2)
+summary(simpnpkudc3)
+
+TukeyHSD(simpnpkudc1)
+TukeyHSD(simpnpkudc2)
+TukeyHSD(simpnpkudc3)
+
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(simpnpkudc1, linfct=mcp(var="Tukey")))
+summary(glht(simpnpkudc2, linfct=mcp(var="Tukey")))
+summary(glht(simpnpkudc3, linfct=mcp(var="Tukey")))
+
