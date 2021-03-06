@@ -28,7 +28,7 @@ require(psych)
 require(writexl)
 
 palet3 <- c("grey92", "darkgrey", "grey40")
-# palet4 <- c("grey92", "darkgrey", "grey40", "grey10")
+palet4 <- c("grey92", "darkgrey", "grey40", "grey10")
 
 data_summary <- function(data, varname, groupnames){ # funkce pro výpočet errorbars
   require(plyr)
@@ -363,12 +363,11 @@ ggsave("plots/rbd_se.png", device = "png", width = 8, height = 4, dpi = 300)
 
 # METEO -------------------------------------------------------------------
 
-# waiting for data, below OLDER script
-
 met <- read_excel("red/meteo.xlsx")
 colnames(met) [1] <- "month"
 
-met$month <- factor(met$month, levels = c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"))
+met$month <- factor(met$month, levels = c("jan", "feb", "mar", "apr", "may", "jun",
+                               "jul", "aug", "sept", "oct", "nov", "dec"))
 
 met <- met %>% 
   melt(id.vars = c("month"), variable.name = ("year"), value.name = "rain")
@@ -378,11 +377,12 @@ ggplot(met, aes(month, rain, fill=year))+
            position=position_dodge())+
   scale_fill_manual(values = palet4, 
                     name = "", 
-                    labels = c("2015", "2016", "2017", 
+                    labels = c("2018", "2019", "2020", 
                                "longterm normal (1981-2010)"))+
   labs(y = "Sum of Precipitation [mm]", x = "", fill = "")+
-  theme_minimal(base_size = 15)+
-  theme(legend.position="top")
+  theme_classic(base_size = 15)+
+  theme(legend.position="top")+
+  theme(text=element_text(family="Times New Roman"))
 ggsave("plots/meteo.png", device = "png", width = 8, height = 5, dpi = 300)
 
 # RS NDVI -----------------------------------------------------------------
