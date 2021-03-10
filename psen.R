@@ -552,5 +552,74 @@ emmeans(rm18, list(pairwise ~ var), adjust = "tukey")
 emmeans(rm19, list(pairwise ~ var), adjust = "tukey")
 emmeans(rm20, list(pairwise ~ var), adjust = "tukey")
 
+# RAIN simulator ----------------------------------------------------------
 
+rain <- read_excel("red/dest.xlsx", sheet = 2)
+
+rain$depth <- as.factor(rain$depth)
+rain$var <- as.factor(rain$var)
+rain$year <- as.factor(rain$year)
+
+# rainl <- rain %>% 
+#   melt(id.vars = c("var", "depth"), variable.name = "year", value.name = "blue")
+
+# rain errorbar -----------------------------------------------------------
+
+df5 <- data_summary(rain, varname="value", 
+                    groupnames=c("year", "var", "depth"))
+head(df5)
+
+write_xlsx(df5,"rainstat.xlsx") # package "writexl"
+
+# rain explorative --------------------------------------------------------
+
+df5$depth <- factor(df5$depth, levels = c("e", "d", "c", "b", "a"))
+# df1$seas <- factor(df1$seas, levels = c("2018", "2019", "2020"))
+df5$var <- factor(df5$var, levels = c("FYM_ZF", "FYM", "C"))
+
+ggplot(df5, aes(depth, value, fill=var))+
+  geom_bar(stat="identity", color="black", position = position_dodge())+
+  geom_errorbar(aes(ymin=value-sd, ymax=value+sd), width=.2,
+                position=position_dodge(.9))+
+  scale_fill_manual(values= palet3, breaks = rev(levels(df5$var)))+
+  coord_flip()+
+  facet_grid(. ~ year)+
+  labs(y = "\nBlue dye in soil profile [%]",
+       x = "Depth level", fill = "", title = "")+
+  theme_classic(base_size = 15)+
+  theme(text=element_text(family="Times New Roman"))
+# ggsave("plots/blue pix_se.png", device = "png", width = 8, height = 4, dpi = 300)
+
+# rain analysis ------------------------------------------------------------
+
+rain18 <- rain %>%
+  filter(year == 2018)
+
+rain19 <- rain %>%
+  filter(year == 2019) 
+
+rain20 <- rain %>%
+  filter(year == 2020) 
+
+# KW
+
+kruskal.test(value ~ var, data = rain18)
+kruskal.test(value ~ var, data = rain19)
+kruskal.test(value ~ var, data = rain20)
+
+# install.packages("pgirmess")
+require(pgirmess)
+
+kruskalmc(value ~ var, data = rain18, p=0.05)
+kruskalmc(value ~ var, data = rain19, p=0.05)
+kruskalmc(value ~ var, data = rain20, p=0.05)
+
+# pairwise wilcox
+
+pairwise.wilcox.test(rain18$value, rain18$var,
+                     p.adjust.method = "BH")
+pairwise.wilcox.test(rain19$value, rain19$var,
+                     p.adjust.method = "BH")
+pairwise.wilcox.test(rain20$value, rain20$var,
+                     p.adjust.method = "BH")
 
