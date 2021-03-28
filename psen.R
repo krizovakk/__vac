@@ -6,6 +6,7 @@
 # 5052 FYM+NPK -> FYM
 # 5053 NPK -> C
 
+# PLANT SOIL ENVIRONMENT (CAZV)
 # penres
 # unit draft
 # reduced bulk density
@@ -111,7 +112,7 @@ ggplot(df1, aes(depth, penres, fill=var))+
   scale_fill_manual(values= palet3, breaks = rev(levels(df1$var)))+
   coord_flip()+
   facet_grid(. ~ seas)+
-  labs(y = "\nPenetration Resistance [MPa]", x = "Depth [cm]", fill = "", title = "")+
+  labs(y = "\nCone Index [MPa]", x = "Depth [cm]", fill = "", title = "")+
   theme_classic(base_size = 15)+
   theme(text=element_text(family="Times New Roman"))
 # ggsave("plots/penres_se.png", device = "png", width = 8, height = 4, dpi = 300)
@@ -224,7 +225,7 @@ ggplot(df2, aes(seas, kn, fill = var))+
   geom_errorbar(aes(ymin=kn-sd, ymax=kn+sd), width=.2,
                 position=position_dodge(.9))+
   scale_fill_manual(values = palet3)+
-  labs(y = expression("Unit Draft [ kN"~ m^-2~"]"), 
+  labs(y = expression("Unit Draft [ kN /"~ m^2~"]"), 
        x = "", fill = "", title = "")+
   theme_classic(base_size = 15)+
   theme(text=element_text(family="Times New Roman"))
@@ -551,6 +552,32 @@ library(emmeans)
 emmeans(rm18, list(pairwise ~ var), adjust = "tukey")
 emmeans(rm19, list(pairwise ~ var), adjust = "tukey")
 emmeans(rm20, list(pairwise ~ var), adjust = "tukey")
+
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(rm18, linfct=mcp(var="Tukey"))) # standard numbers
+
+tuk18 <- glht(rm18, linfct=mcp(var="Tukey"))
+summary(tuk18)          # standard display
+tuk18.cld <- cld(tuk18)   # letter-based display
+tuk18.cld
+opar <- par(mai=c(1,1,1.5,1))
+plot(tuk18.cld)
+
+
+tuk19 <- glht(rm19, linfct=mcp(var="Tukey"))
+summary(tuk19)          # standard display
+tuk19.cld <- cld(tuk19)   # letter-based display
+tuk19.cld
+opar <- par(mai=c(1,1,1.5,1))
+plot(tuk19.cld)
+
+tuk20 <- glht(rm20, linfct=mcp(var="Tukey"))
+summary(tuk20)          # standard display
+tuk20.cld <- cld(tuk20)   # letter-based display
+tuk20.cld
+opar <- par(mai=c(1,1,1.5,1))
+plot(tuk20.cld)
 
 # RAIN simulator ----------------------------------------------------------
 
