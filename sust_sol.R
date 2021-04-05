@@ -28,7 +28,7 @@ library(extrafont)
 ##  [5] "Arial Narrow"                 "Arial Rounded MT Bold"  
 
 data_summary <- function(data, varname, groupnames){ # funkce pro výpočet errorbars
-  require(plyr)
+  # require(plyr)
   summary_func <- function(x, col){
     c(mean = mean(x[[col]], na.rm=TRUE),
       sd = sd(x[[col]], na.rm=TRUE))
@@ -45,7 +45,7 @@ ud <- read_excel("red/unitd.xlsx")
 ud <- ud %>% 
   mutate(udkn = unitdraft/1000)
 
-# pr <- read_excel("red/sust2.xlsx", sheet = 1)
+pr <- read_excel("red/penres.xlsx", sheet = 1)
 # roh <- read_excel("red/sust2.xlsx", sheet = 2)
 # sfh <- read_excel("red/sust2.xlsx", sheet = 3)
 
@@ -78,16 +78,23 @@ write_xlsx(dfud,"udstat.xlsx") # package "writexl"
 
 # plots
 
+labelkwud <- c("a","a","a", "b","b","a","a","a","a","a","a", 
+               "b","ac","bc","bc","abc","a","ab","bc","c",
+               "ab","a","b","ab","ab","ab","a","ab","a","b" )
+
 ggplot(dfud, aes(year, unitd, fill=var))+
   geom_bar(stat="identity", color="black", position = position_dodge())+
   geom_errorbar(aes(ymin=unitd-sd, ymax=unitd+sd), width=.2,
                 position=position_dodge(.9))+
+  geom_text(aes(y = 123, label = labelkwud),
+            size = 3, position=position_dodge(0.9))+
   scale_fill_brewer(palette = "Greys")+
   labs(y = expression("Unit Draft [ kN"~ m^-2~"]"), 
        x = "", title = "", fill = "")+
   theme_classic(base_size = 15)+
   theme(text=element_text(family="Times New Roman"))
 # ggsave("plots/ud.png", device = "png", width = 8, height = 4, dpi = 300)
+# ggsave("plots/ud_kwlabel.png", device = "png", width = 8, height = 4, dpi = 300)
 
 # analysis ----------------------------------------------------------------
 
@@ -170,7 +177,6 @@ wilcox.test(pud$unitd[cud$apl1], cud$unitd[pud$apl2]) # no diff
 # t.test(hud$unitd[cud$apl1], cud$unitd[hud$apl2])
 # t.test(pud$unitd[cud$apl1], cud$unitd[pud$apl2])
 
-
 # pismenka pro Vaclava ----------------------------------------------------
 
 # install.packages("multcompView")
@@ -214,3 +220,144 @@ mcud20=kmcud20$dif.com[,3]
 names(mcud20)=row.names(kmcud20$dif.com)
 multcompLetters(mcud20)
 
+# PENRES ------------------------------------------------------------------
+
+pr <- read_excel("red/penres.xlsx", sheet = 1)
+
+pr <- pr %>% 
+  select(year, var, d04, d08, d12, d16, d20) %>% 
+  mutate(apl1 = (year %in% c("2015", "2017", "2018", "2020"))) %>%
+  mutate(apl2 = (year %in% c("2016", "2019"))) %>% 
+  mutate(apl = case_when(apl1 == "TRUE" ~ "apl1", 
+                         apl2 == "TRUE" ~ "apl2")) %>% 
+  select(year, var, apl, d04, d08, d12, d16, d20) %>% 
+  melt(id.vars = c("var", "year", "apl"), 
+       variable.name = ("depth"), value.name = "penres") 
+
+# factors
+
+# pr$var <- factor(pr$var, levels = varlev, labels = varlab)
+# # prl$var <- factor(prl$var, levels = c("pSOL", "hSOL", "cSOL", "SOL", "C"))
+# pr$year <- factor(pr$year)
+# pr$apl <- factor(pr$apl)
+# 
+# # dept <- c("20", "16", "12", "8", "4")
+# # prl$depth <- factor(prl$depth, labels = dept)
+# # prl$depth <- fct_rev(prl$depth)
+
+dept <- c("20", "16", "12", "8", "4")
+
+pr$depth <- factor(pr$depth, levels = c("d20", "d16", "d12", "d08", "d04"), 
+                    labels = dept)
+pr$year <- factor(pr$year)
+pr$var <- factor(pr$var, levels = c("10", "14", "4", "5", "6"), 
+                   labels = c("pSOL", "hSOL", "cSOL", "SOL", "C"))
+
+# stats
+
+dfpr <- data_summary(pr, varname="penres", 
+                     groupnames=c("year", "var", "depth"))
+head(dfpr)
+write_xlsx(dfpr,"prstat.xlsx") # package "writexl"
+
+# plots
+
+# labelkwud <- c("a","a","a", "b","b","a","a","a","a","a","a", 
+#                "b","ac","bc","bc","abc","a","ab","bc","c",
+#                "ab","a","b","ab","ab","ab","a","ab","a","b")
+
+palet5 <- c("white", "grey82", "darkgrey", "grey40", "grey10")
+
+ggplot(dfpr, aes(depth, penres, fill=var))+
+  geom_bar(stat="identity", color="black", position = position_dodge())+
+  geom_errorbar(aes(ymin=penres-sd, ymax=penres+sd), width=.2,
+                position=position_dodge(.9))+
+  scale_fill_manual(values = palet5, breaks = rev(levels(dfpr$var)))+
+  coord_flip()+
+  facet_grid(. ~ year)+
+  labs(y = "\nPenetration Resistance [MPa]", x = "Depth [cm]", 
+       fill = "", title = "")+
+  theme_classic(base_size = 15)+
+  theme(text=element_text(family="Times New Roman"))
+# ggsave("plots/pr.png", device = "png", width = 8, height = 4, dpi = 300)
+# ggsave("plots/pr_kwlabel.png", device = "png", width = 8, height = 4, dpi = 300)
+
+# analysis ----------------------------------------------------------------
+
+pr15 <- pr %>% 
+  filter(year == "2015")
+pr16 <- pr %>% 
+  filter(year == "2016")
+pr17 <- pr %>% 
+  filter(year == "2017")
+pr18 <- pr %>% 
+  filter(year == "2018")
+pr19 <- pr %>% 
+  filter(year == "2019")
+pr20 <- pr %>% 
+  filter(year == "2020")
+
+# homogenity of variance check
+
+bartlett.test(penres ~ var, data = pr15)
+bartlett.test(penres ~ var, data = pr16)
+bartlett.test(penres ~ var, data = pr17) # nope
+bartlett.test(penres ~ var, data = pr18) # nope
+bartlett.test(penres ~ var, data = pr19) # nope
+bartlett.test(penres ~ var, data = pr20)
+
+# kw 
+
+kruskal.test(penres ~ var, data = pr15) # yep
+kruskal.test(penres ~ var, data = pr16)
+kruskal.test(penres ~ var, data = pr17) # yep
+kruskal.test(penres ~ var, data = pr18) # yep
+kruskal.test(penres ~ var, data = pr19) # yep
+kruskal.test(penres ~ var, data = pr20) # yep
+
+# install.packages("pgirmess") # post-hoc testy
+require(pgirmess)
+
+kruskalmc(penres ~ var, data = pr15, p=0.05)
+kruskalmc(penres ~ var, data = pr17, p=0.05)
+kruskalmc(penres ~ var, data = pr18, p=0.05)
+kruskalmc(penres ~ var, data = pr19, p=0.05)
+kruskalmc(penres ~ var, data = pr20, p=0.05)
+
+# ## one way ANOVA
+# 
+# simppr15 <- aov(penres ~ var, data = pr15)
+# simpkraprc2 <- aov(prkn ~ var, data = c2_krapr)
+# simpkraprc3 <- aov(prkn ~ var, data = c3_krapr)
+# 
+# summary(simppr15)
+# 
+# TukeyHSD(simppr15)
+# # plot(TukeyHSD(simp20))
+# # install.packages("multcomp")
+# require(multcomp)
+# summary(glht(simppr15, linfct=mcp(var="Tukey")))
+
+# analysis of year of application
+
+cpr <- pr %>% 
+  filter(var == "cSOL")
+hpr <- pr %>% 
+  filter(var == "hSOL")
+ppr <- pr %>% 
+  filter(var == "pSOL")
+
+cpr04 <- cpr %>% 
+  filter(depth == "d04")
+ 
+shapiro.test(cpr04$penres) # nope
+shapiro.test(hpr$penres) # nope
+shapiro.test(ppr$penres) # nope
+
+boxplot(cpr04$penres[cpr$apl1], cpr04$penres[cpr$apl2]) 
+boxplot(hpr$penres[cpr$apl1], cpr$penres[hpr$apl2]) 
+boxplot(ppr$penres[cpr$apl1], cpr$penres[ppr$apl2]) 
+
+wilcox.test(cpr04$penres[cpr04$apl1], cpr04$penres[cpr04$apl2]) # no diff
+wilcox.test(hpr$penres[cpr$apl1], cpr$penres[hpr$apl2]) # no diff
+wilcox.test(ppr$penres[cpr$apl1], cpr$penres[ppr$apl2]) # no diff
