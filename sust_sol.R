@@ -46,7 +46,7 @@ ud <- ud %>%
   mutate(udkn = unitdraft/1000)
 
 pr <- read_excel("red/penres.xlsx", sheet = 1)
-# roh <- read_excel("red/sust2.xlsx", sheet = 2)
+roh <- read_excel("red/roh.xlsx", sheet = 1)
 # sfh <- read_excel("red/sust2.xlsx", sheet = 3)
 
 # VARIANTS
@@ -361,3 +361,236 @@ boxplot(ppr$penres[cpr$apl1], cpr$penres[ppr$apl2])
 wilcox.test(cpr04$penres[cpr04$apl1], cpr04$penres[cpr04$apl2]) # no diff
 wilcox.test(hpr$penres[cpr$apl1], cpr$penres[hpr$apl2]) # no diff
 wilcox.test(ppr$penres[cpr$apl1], cpr$penres[ppr$apl2]) # no diff
+
+
+# ROH ---------------------------------------------------------------------
+
+roh <- read_excel("red/roh.xlsx", sheet = 1)
+
+colnames(roh)[3] <- "year"
+colnames(roh)[4] <- "var"
+colnames(roh)[5] <- "roh"
+
+roh$var <- factor(roh$var, levels = varlev, labels = varlab)
+roh$year <- factor(roh$year)
+
+# roh <- roh %>%
+#   mutate(apl1 = (year %in% c("2015", "2017", "2018", "2020"))) %>%
+#   mutate(apl2 = (year %in% c("2016", "2019"))) 
+
+# stats
+
+dfroh <- data_summary(roh, varname="roh", 
+                     groupnames=c("year", "var"))
+head(dfroh)
+write_xlsx(dfroh,"rohstat.xlsx") # package "writexl"
+
+# explorative
+
+ggplot(dfroh, aes(year, roh, fill=var))+
+  geom_bar(stat="identity", color="black", position = position_dodge())+
+  geom_errorbar(aes(ymin=roh-sd, ymax=roh+sd), width=.2,
+                position=position_dodge(.9))+
+  scale_fill_brewer(palette = "Greys")+
+  labs(y = expression("Reduced Bulk Density [ g"~ cm^-3~"]"), 
+       x = "", title = "", fill = "")+
+  theme_classic(base_size = 15)+
+  theme(text=element_text(family="Times New Roman"))
+# ggsave("plots/roh.png", device = "png", width = 8, height = 4, dpi = 300)
+
+# DPZ ---------------------------------------------------------------------
+
+dpz <- read_excel("red/dpz.xlsx", sheet = 1)
+
+dpz$var <- as.character(dpz$var)
+dpz$var <- factor(dpz$var, levels = c("3", "4", "5", "6", "9", "10", "13", "14"),
+                            labels = c("cattle", "cattleSOL", "npkSOL", "SOL", "pig", "pigSOL", "hen", "henSOL"))
+dpz$term <- factor(dpz$term)
+
+
+# residuals check ---------------------------------------------------------
+
+install.packages("olsrr") # https://cran.r-project.org/web/packages/olsrr/vignettes/residual_diagnostics.html
+require("olsrr")
+
+model <- lm(ndvi ~ var, data = dpz)
+ols_plot_resid_qq(model)
+ols_test_normality(model)
+ols_test_correlation(model)
+ols_plot_resid_fit(model)
+ols_plot_resid_hist(model)
+
+par(mfrow = c(2, 2))
+plot(model)
+
+# log transf --------------------------------------------------------------
+
+#ndvi_log <- (log(dpz$ndvi))
+#shapiro.test(ndvi_log) # did not help
+
+# data distribution check ---------------------------------------------------------
+# 
+# hist(dpz$ndvi)
+# hist(dpz$ndwi)
+# 
+# shapiro.test(dpz$ndvi[dpz$var == "3"])
+# shapiro.test(dpz$ndvi[dpz$var == "4"])
+# shapiro.test(dpz$ndvi[dpz$var == "5"])
+# shapiro.test(dpz$ndvi[dpz$var == "6"])
+# shapiro.test(dpz$ndvi[dpz$var == "9"])
+# shapiro.test(dpz$ndvi[dpz$var == "10"])
+# shapiro.test(dpz$ndvi[dpz$var == "13"])
+# shapiro.test(dpz$ndvi[dpz$var == "14"]) # no var has NR
+# 
+# install.packages("goft")
+# require("goft")
+# gamma_test(dpz$ndvi) # nope
+
+
+# GLM ---------------------------------------------------------------------
+
+# install.packages("goft")
+# require("goft")
+# gamma_test(dpz$ndvi) # nope
+# 
+# glm1 <- glm(ndvi ~ var, data = dpz, family = "Gamma")
+# summary(glm1)
+
+# two sample wilcoxon test ------------------------------------------------
+
+# NDVI
+
+wilcox.test(dpz$ndvi[dpz$var == "3"], dpz$ndvi[dpz$var == "4"], 
+      alternative = "two.sided")
+
+boxplot(dpz$ndvi[dpz$var == "3"], dpz$ndvi[dpz$var == "4"]) 
+# p-value = 0.005504, var 3 higher
+
+wilcox.test(dpz$ndvi[dpz$var == "5"], dpz$ndvi[dpz$var == "6"], 
+            alternative = "two.sided")
+
+boxplot(dpz$ndvi[dpz$var == "5"], dpz$ndvi[dpz$var == "6"]) 
+# p-value = 0.5117
+
+wilcox.test(dpz$ndvi[dpz$var == "9"], dpz$ndvi[dpz$var == "10"], 
+            alternative = "two.sided")
+
+boxplot(dpz$ndvi[dpz$var == "9"], dpz$ndvi[dpz$var == "10"]) 
+# p-value = 0.5445
+
+wilcox.test(dpz$ndvi[dpz$var == "13"], dpz$ndvi[dpz$var == "14"], 
+            alternative = "two.sided")
+
+boxplot(dpz$ndvi[dpz$var == "13"], dpz$ndvi[dpz$var == "14"]) 
+# p-value = 0.1828
+
+# NDWI
+
+wilcox.test(dpz$ndwi[dpz$var == "3"], dpz$ndwi[dpz$var == "4"], 
+            alternative = "two.sided")
+
+boxplot(dpz$ndwi[dpz$var == "3"], dpz$ndwi[dpz$var == "4"]) 
+# p-value = 0.002243, var 3 higher
+
+wilcox.test(dpz$ndwi[dpz$var == "5"], dpz$ndwi[dpz$var == "6"], 
+            alternative = "two.sided")
+
+boxplot(dpz$ndwi[dpz$var == "5"], dpz$ndwi[dpz$var == "6"]) 
+# p-value = 0.1625
+
+wilcox.test(dpz$ndwi[dpz$var == "9"], dpz$ndwi[dpz$var == "10"], 
+            alternative = "two.sided")
+
+boxplot(dpz$ndwi[dpz$var == "9"], dpz$ndwi[dpz$var == "10"]) 
+# p-value = 0.2191
+
+wilcox.test(dpz$ndwi[dpz$var == "13"], dpz$ndwi[dpz$var == "14"], 
+            alternative = "two.sided")
+
+boxplot(dpz$ndwi[dpz$var == "13"], dpz$ndwi[dpz$var == "14"]) 
+# p-value = 0.3021
+
+
+# ANOVA ----------------------------------------------------------
+
+# homogenity of variance check
+
+# bartlett.test(ndvi ~ var, data = dpz) # nope
+# bartlett.test(ndwi ~ var, data = dpz) # nope
+# 
+# # kw 
+# 
+# kruskal.test(ndvi ~ var, data = dpz) # yep
+# kruskal.test(ndwi ~ var, data = dpz) # yep
+# 
+# # install.packages("pgirmess") # post-hoc testy
+# require(pgirmess)
+# 
+# kruskalmc(ndvi ~ var, data = dpz, p=0.05)
+# kruskalmc(ndwi ~ var, data = dpz, p=0.05)
+
+## one way ANOVA NDVI
+
+ggplot(dpz, aes(x = var, y = ndvi, group = term, col = term)) +  # https://stat.ethz.ch/~meier/teaching/anova/random-and-mixed-effects-models.html
+  geom_point() + 
+  stat_summary(fun.y = mean, geom = "line")
+
+with(dpz, interaction.plot(x.factor = var, trace.factor = term, 
+                                response = ndvi))
+
+library(lme4)
+
+a_ndvi <- lmer(ndvi ~ var + (1|term) + (1|term:var), data = dpz)
+
+summary(a_ndvi)
+anova(a_ndvi)
+
+fit.fixed <- aov(ndvi ~ var * term, data = dpz)
+summary(fit.fixed)
+
+
+TukeyHSD(a_ndvi)
+# plot(TukeyHSD(simp20))
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(a_ndvi, linfct=mcp(var="Tukey")))
+
+## one way ANOVA NDWI
+
+ggplot(dpz, aes(x = var, y = ndwi, group = term, col = term)) +  # https://stat.ethz.ch/~meier/teaching/anova/random-and-mixed-effects-models.html
+  geom_point() + 
+  stat_summary(fun.y = mean, geom = "line")
+
+with(dpz, interaction.plot(x.factor = var, trace.factor = term, 
+                                response = ndwi))
+
+library(lme4)
+
+a_ndwi <- lmer(ndwi ~ var + (1|term) + (1|term:var), data = dpz)
+
+summary(a_ndwi)
+anova(a_ndwi)
+
+fit.fixed <- aov(ndwi ~ var * term, data = dpz)
+summary(fit.fixed)
+
+
+TukeyHSD(a_ndwi)
+# plot(TukeyHSD(simp20))
+# install.packages("multcomp")
+require(multcomp)
+summary(glht(a_ndwi, linfct=mcp(var="Tukey")))
+
+# DPZ boxplot
+
+ggplot(dpz, aes(var, ndvi))+
+  geom_boxplot()+
+  labs(x="", y="NDVI")+
+  theme_classic(base_size = 15)+
+  theme(text=element_text(family="Times New Roman"))
+
+ggplot(dpz, aes(var, ndwi))+
+  geom_boxplot()+
+  labs(x="", y="NDWI")+
+  theme_classic(base_size = 15)+
+  theme(text=element_text(family="Times New Roman"))
