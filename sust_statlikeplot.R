@@ -43,60 +43,50 @@ data_summary <- function(data, varname, groupnames){ # funkce pro výpočet erro
 
 # general load ------------------------------------------------------------
 
-ud <- read_excel("red/unitd.xlsx")
-ud <- ud %>%
-  mutate(udkn = unitdraft/1000)
+ud <- read_excel("red/iud_new_plot.xlsx")
 
-pr <- read_excel("red/penres.xlsx", sheet = 1)
-roh <- read_excel("red/roh.xlsx", sheet = 1)
-# sfh <- read_excel("red/sust2.xlsx", sheet = 3)
-
-# VARIANTS
-# 4 cattle manure SOL ; 5 SOL ; 6 control ; 10 pig manure SOL ; 14 poultry (hen) manure SOL
-
-varlev <- c("6", "5", "4", "14", "10")
-varlab <- c("C", "SOL", "cSOL", "hSOL", "pSOL")
-
+varlev <- c("3", "4", "5", "6", "9", "10", "13", "14")
+varlab <- c("3", "4", "5", "6", "9", "10", "13", "14")
 
 # UNIT DRAFT --------------------------------------------------------------
 
 # factors
 
 ud$var <- factor(ud$var, levels = varlev, labels = varlab)
-# ud$year <- factor(ud$year)
 ud$term <- factor(ud$term)
 
 ud <- ud %>%
-  mutate(apl1 = (year %in% c("2015", "2017", "2018", "2020"))) %>%
-  mutate(apl2 = (year %in% c("2016", "2019"))) 
+  mutate(sol_f = (var %in% c("4", "5", "10", "14"))) %>%
+  mutate(sol_t = (var %in% c("3", "6", "9", "13"))) 
+ud <- ud %>%
+  mutate(sol = case_when(sol_f == "TRUE" ~ "FALSE", 
+                         sol_t == "TRUE" ~ "TRUE"))
 
 ud <- ud %>%
-  mutate(apl = case_when(apl1 == "TRUE" ~ "apl1", 
-                         apl2 == "TRUE" ~ "apl2"))
-# stats
+  mutate(duo = case_when(var %in% c("3","4") ~ c("cattle"), 
+                         var %in% c("5","6") ~ "npk", 
+                         var %in% c("9","10") ~ "pig", 
+                         var %in% c("13","14") ~ "poultry"))
 
-dfud <- data_summary(ud, varname="unitd",
-                     groupnames=c("year", "var"))
-
+dfud <- data_summary(ud, varname="unitd", 
+                     groupnames=c("term", "var", "sol", "duo"))
 head(dfud)
-write_xlsx(dfud,"udstat.xlsx") # package "writexl"
+write_xlsx(dfud,"prstat.xlsx") # package "writexl"
 
-# plots
+# STATISTICA-like plot ----------------------------------------------------
 
-labelkwud <- c("a","a","a", "b","b","a","a","a","a","a","a", 
-               "b","ac","bc","bc","abc","a","ab","bc","c",
-               "ab","a","b","ab","ab","ab","a","ab","a","b" )
-
-ggplot(dfud, aes(year, unitd, fill=var))+
-  geom_bar(stat="identity", color="black", position = position_dodge())+
-  geom_errorbar(aes(ymin=unitd-sd, ymax=unitd+sd), width=.2,
-                position=position_dodge(.9))+
-  geom_text(aes(y = 123, label = labelkwud),
-            size = 3, position=position_dodge(0.9))+
-  scale_fill_brewer(palette = "Greys")+
+ggplot(dfud, aes(term, unitd, group=sol))+
+  geom_line(aes(color = sol), size = 1, position=position_dodge(width = .5))+
+  geom_errorbar(aes(ymin=unitd-sd, ymax=unitd+sd, color = sol), width=.5, size = 2, position=position_dodge(width = .5))+
+  geom_point(aes(color = sol), size = 4, position=position_dodge(width = .5))+
+  facet_grid(. ~ dfud$duo)+
+  # geom_text(aes(y = 123, label = labelkwud),
+  #           size = 3, position=position_dodge(0.9))+
+  # scale_fill_brewer(palette = "Greys")+
   labs(y = expression("Unit Draft [ kN"~ m^-2~"]"), 
        x = "", title = "", fill = "")+
-  theme_classic(base_size = 15)+
+  scale_color_discrete(name="SOL")+
+  theme_classic(base_size = 20)+
   theme(text=element_text(family="Times New Roman"))
 # ggsave("plots/ud.png", device = "png", width = 8, height = 4, dpi = 300)
 # ggsave("plots/ud_kwlabel.png", device = "png", width = 8, height = 4, dpi = 300)
