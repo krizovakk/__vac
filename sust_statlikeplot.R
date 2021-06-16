@@ -447,7 +447,6 @@ summary(m1)
 
 # GEE NDWI ---------------------------------------------------------------------
 
-# ndvi <- read_excel("red/NDVImeansd.xlsx")
 ndwi <- read.csv("red/NDWImeansd.csv", header = TRUE)
 
 ndwi <- ndwi %>% 
@@ -456,14 +455,6 @@ ndwi <- ndwi %>%
 
 ndwi$date <- factor(ndwi$date)
 levels(ndwi$date)
-
-# ndwi <- ndwi %>% 
-#   filter(date %in% c("20170511", "20170603", "20170620", "20170829", 
-#                    "20200329", "20200405", "20200408", "20200418", 
-#                    "20200420", "20200423", "20200428", "20200518", 
-#                    "20200622", "20200714", "20200722", "20200801", 
-#                    "20200806", "20200808", "20200813", "20200816", 
-#                    "20200821", "20200828")) 
 
 ndwi$id <- factor(ndwi$id)
 ndwi$mean <- as.numeric(ndwi$mean)
@@ -479,19 +470,7 @@ ndwi_var <- ndwi %>%
                          id == "10" ~ "pigSOL",
                          id %in% c("13", "1001") ~ "pou",
                          id %in% c("14", "1002") ~ "pouSOL"))
-# 
-# ndwi_var <- ndwi %>% 
-#   filter(id %in% c("3", "4", "5", "6", "9", "10", "13", "14", "1001", "1002")) %>% 
-#   mutate(var = case_when(id == "3" ~ "cattle",
-#                          id == "4" ~ "cSOL",
-#                          id == "5" ~ "npkSOL",
-#                          id == "6" ~ "npk",
-#                          id == "9" ~ "pig",
-#                          id == "10" ~ "pigSOL",
-#                          id == "13" ~ "pou",
-#                          id == "14" ~ "pouSOL",
-#                          id == "1001" ~ "pou",
-#                          id == "1002" ~ "pouSOL"))
+
 ndwi_var$var <- factor(ndwi_var$var, levels = c("npk", "npkSOL",  "catt", "cattSOL", "pig", "pigSOL", "pou", "pouSOL"))
 
 ggplot(ndwi_var, aes(date, mean, color = var))+
@@ -512,13 +491,15 @@ ggplot(ndwi_var, aes(date, mean, color = var))+
 NDWIs1 <- ndwi_var %>% 
   filter(date %in% c("20170511", "20170603", "20170620")) %>% 
   filter(id %in% c("3", "4", "5", "6", "9", "10", "1001", "1002")) %>% 
-  mutate(seas = "s1")
+  mutate(seas = "s1")%>% 
+  mutate(crop = "winter wheat")
 
 NDWIs2 <- ndwi_var %>% 
   filter(date %in% c("20180411", "20180419", "20180421", "20180429", "20180514", "20180521",
                      "20180531", "20180703")) %>% 
   filter(id %in% c("3", "4", "5", "6", "9", "10", "13", "14")) %>% 
-  mutate(seas = "s2")
+  mutate(seas = "s2")%>% 
+  mutate(crop = "corn")
  
 NDWIs3 <- ndwi_var %>% 
   filter(date %in% c("20181011", "20181013", "20181016", "20181018",
@@ -527,20 +508,44 @@ NDWIs3 <- ndwi_var %>%
                      "20190416", "20190419", "20190421", "20190603",
                      "20190625", "20190630", "20190723")) %>% 
   filter(id %in% c("3", "4", "5", "6", "9", "10", "13", "14")) %>% 
-  mutate(seas = "s3")
+  mutate(seas = "s3")%>% 
+  mutate(crop = "winter wheat")
 
 NDWIs4 <- ndwi_var %>% 
   filter(date %in% c("20191031", "20200101", "20200329", "20200405",
                      "20200408", "20200418", "20200420", "20200423",
                      "20200428", "20200518", "20200622", "20200714", "20200722")) %>% 
   filter(id %in% c("3", "4", "5", "6", "9", "10", "13", "14")) %>% 
-  mutate(seas = "s4")
+  mutate(seas = "s4")%>% 
+  mutate(crop = "winter wheat")
 
 #facet plot all seasons
 
 ndwi_seas <- rbind(NDWIs1, NDWIs2, NDWIs3, NDWIs4)
 
 write_xlsx(ndwi_seas,"NDWI.xlsx") # package "writexl"
+
+# seas facet
+
+to_string <- as_labeller(c("s1" = "winter wheat", "s2" = "corn", "s3" = "winter wheat", "s4" = "winter wheat"))
+
+ggplot(ndwi_seas, aes (date, mean, color = var))+
+  geom_line(size = .7, position=position_dodge(width = 1))+
+  geom_errorbar(aes(ymin=mean-stdDev, ymax=mean+stdDev), width=.5, size = .5, 
+                position=position_dodge(width = 1))+ # linetype = sol
+  geom_point(size = 2, position=position_dodge(width = 1))+ # aes(shape = sol)
+  labs(y = "NDWI", 
+       x = "", title = "", color = "")+
+  # scale_y_continuous(limits = c(0.8, 1), breaks = seq(0.8, 1, by = 0.1))+
+  scale_color_brewer(palette="Spectral")+
+  facet_grid(. ~ seas, scales = "free", labeller = to_string)+
+  # coord_cartesian(ylim = c(75, 120))+
+  # geom_text(aes(y = 118, label = lab_ci),
+  # size = 5, position=position_dodge(1))+
+  theme_classic(base_size = 25)+ # base_size = 20
+  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90), 
+        legend.position = "top") # axis.text.x = element_text(size = 11) # legend.position = c(0.9, 0.85))
+ggsave("plots/NDWIall.png", device = "png", width = 10, height = 6, dpi = 300)
 
 # plots
 
@@ -599,3 +604,105 @@ ggplot(NDWIs4, aes(date, mean, color = var))+
   # size = 5, position=position_dodge(1))+
   theme_classic(base_size = 20)+ # base_size = 20
   theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90)) # axis.text.x = element_text(size = 11)
+
+# analysis
+
+ hist(ndwi_seas$mean)
+ shapiro.test(ndwi_seas$mean)
+ bartlett.test(ndwi_seas$mean ~ ndwi_seas$var) # yep
+
+ # install.packages("lme4")
+require(lme4)
+
+m2 <- lmer(ndwi_seas$mean ~ ndvi_seas$var + 1|ndvi_seas$date)
+summary(m2)
+
+# GEE LAI ---------------------------------------------------------------------
+
+lai <- read.csv("red/LAImeansd.csv", header = TRUE)
+
+lai <- lai %>% 
+  mutate(date = substr(`system.index`, 1, 8)) %>% 
+  select(id, mean, stdDev, date)
+
+lai$date <- factor(lai$date)
+levels(lai$date)
+
+lai$id <- factor(lai$id)
+lai$mean <- as.numeric(lai$mean)
+lai$stdDev <- as.numeric(lai$stdDev)
+
+lai_var <- lai %>% 
+  filter(id %in% c("3", "4", "5", "6", "9", "10", "13", "14", "1001", "1002")) %>% 
+  mutate(var = case_when(id == "3" ~ "catt",
+                         id == "4" ~ "cattSOL",
+                         id == "5" ~ "npkSOL",
+                         id == "6" ~ "npk",
+                         id == "9" ~ "pig",
+                         id == "10" ~ "pigSOL",
+                         id %in% c("13", "1001") ~ "pou",
+                         id %in% c("14", "1002") ~ "pouSOL"))
+
+lai_var$var <- factor(lai_var$var, levels = c("npk", "npkSOL",  "catt", "cattSOL", "pig", "pigSOL", "pou", "pouSOL"))
+
+# separated seasons
+
+LAIs1 <- lai_var %>% 
+  filter(date %in% c("20170511", "20170603", "20170620")) %>% 
+  filter(id %in% c("3", "4", "5", "6", "9", "10", "1001", "1002")) %>% 
+  mutate(seas = "s1")%>% 
+  mutate(crop = "winter wheat")
+
+LAIs2 <- lai_var %>% 
+  filter(date %in% c("20180411", "20180419", "20180421", "20180429", "20180514", "20180521",
+                     "20180531", "20180703")) %>% 
+  filter(id %in% c("3", "4", "5", "6", "9", "10", "13", "14")) %>% 
+  mutate(seas = "s2")%>% 
+  mutate(crop = "corn")
+
+LAIs3 <- lai_var %>% 
+  filter(date %in% c("20181011", "20181013", "20181016", "20181018",
+                     "20181031", "20181115", "20181117", "20181205",
+                     "20190205", "20190218", "20190228", "20190401",
+                     "20190416", "20190419", "20190421", "20190603",
+                     "20190625", "20190630", "20190723")) %>% 
+  filter(id %in% c("3", "4", "5", "6", "9", "10", "13", "14")) %>% 
+  mutate(seas = "s3")%>% 
+  mutate(crop = "winter wheat")
+
+LAIs4 <- lai_var %>% 
+  filter(date %in% c("20191031", "20200101", "20200329", "20200405",
+                     "20200408", "20200418", "20200420", "20200423",
+                     "20200428", "20200518", "20200622", "20200714", "20200722")) %>% 
+  filter(id %in% c("3", "4", "5", "6", "9", "10", "13", "14")) %>% 
+  mutate(seas = "s4")%>% 
+  mutate(crop = "winter wheat")
+
+#facet plot all seasons
+
+lai_seas <- rbind(LAIs1, LAIs2, LAIs3, LAIs4)
+
+write_xlsx(lai_seas,"LAI.xlsx") # package "writexl"
+
+# seas facet
+
+to_string <- as_labeller(c("s1" = "winter wheat", "s2" = "corn", "s3" = "winter wheat", "s4" = "winter wheat"))
+
+ggplot(lai_seas, aes (date, mean, color = var))+
+  geom_line(size = .7, position=position_dodge(width = 1))+
+  geom_errorbar(aes(ymin=mean-stdDev, ymax=mean+stdDev), width=.5, size = .5, 
+                position=position_dodge(width = 1))+ # linetype = sol
+  geom_point(size = 2, position=position_dodge(width = 1))+ # aes(shape = sol)
+  labs(y = "LAI", 
+       x = "", title = "", color = "")+
+  # scale_y_continuous(limits = c(0.8, 1), breaks = seq(0.8, 1, by = 0.1))+
+  scale_color_brewer(palette="Spectral")+
+  facet_grid(. ~ seas, scales = "free", labeller = to_string)+
+  # coord_cartesian(ylim = c(75, 120))+
+  # geom_text(aes(y = 118, label = lab_ci),
+  # size = 5, position=position_dodge(1))+
+  theme_classic(base_size = 25)+ # base_size = 20
+  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90), 
+        legend.position = "top") # axis.text.x = element_text(size = 11) # legend.position = c(0.9, 0.85))
+ggsave("plots/LAIall.png", device = "png", width = 10, height = 6, dpi = 300)
+
