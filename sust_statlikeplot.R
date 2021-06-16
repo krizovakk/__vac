@@ -98,6 +98,12 @@ ggplot(dfud, aes(term, unitd, group=sol))+
   theme(text=element_text(family="Times New Roman")) # axis.text.x = element_text(size = 11)
 ggsave("plots/iud.png", device = "png", width = 10, height = 5, dpi = 300)
 
+# regrese
+
+var3 <- ud %>% 
+  filter(var == '3')
+
+
 # SFH --------------------------------------------------------------
 
 sfh <- read_excel("red/sfh.xlsx")
@@ -370,10 +376,10 @@ ggplot(ndvi_seas, aes (date, mean, color = var))+
   # coord_cartesian(ylim = c(75, 120))+
   # geom_text(aes(y = 118, label = lab_ci),
   # size = 5, position=position_dodge(1))+
-  theme_classic(base_size = 25)+ # base_size = 20
+  theme_classic(base_size = 20)+ # base_size = 20
   theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90), 
         legend.position = "top") # axis.text.x = element_text(size = 11) # legend.position = c(0.9, 0.85))
-ggsave("plots/NDVIall.png", device = "png", width = 10, height = 6, dpi = 300)
+ggsave("plots/NDVIall.png", device = "png", width = 15, height = 8, dpi = 300)
 
 # separate seasons
 
@@ -542,10 +548,10 @@ ggplot(ndwi_seas, aes (date, mean, color = var))+
   # coord_cartesian(ylim = c(75, 120))+
   # geom_text(aes(y = 118, label = lab_ci),
   # size = 5, position=position_dodge(1))+
-  theme_classic(base_size = 25)+ # base_size = 20
+  theme_classic(base_size = 20)+ # base_size = 20
   theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90), 
         legend.position = "top") # axis.text.x = element_text(size = 11) # legend.position = c(0.9, 0.85))
-ggsave("plots/NDWIall.png", device = "png", width = 10, height = 6, dpi = 300)
+ggsave("plots/NDWIall.png", device = "png", width = 15, height = 8, dpi = 300)
 
 # plots
 
@@ -701,8 +707,20 @@ ggplot(lai_seas, aes (date, mean, color = var))+
   # coord_cartesian(ylim = c(75, 120))+
   # geom_text(aes(y = 118, label = lab_ci),
   # size = 5, position=position_dodge(1))+
-  theme_classic(base_size = 25)+ # base_size = 20
+  theme_classic(base_size = 20)+ # base_size = 20
   theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90), 
         legend.position = "top") # axis.text.x = element_text(size = 11) # legend.position = c(0.9, 0.85))
-ggsave("plots/LAIall.png", device = "png", width = 10, height = 6, dpi = 300)
+ggsave("plots/LAIall.png", device = "png", width = 15, height = 8, dpi = 300)
 
+
+# LAI analysis
+
+hist(lai_seas$mean)
+shapiro.test(lai_seas$mean)
+bartlett.test(lai_seas$mean ~ lai_seas$var) # yep
+
+# install.packages("lme4")
+require(lme4)
+
+m3 <- lmer(lai_seas$mean ~ lai_seas$var + 1|lai_seas$date)
+summary(m3)
