@@ -258,7 +258,6 @@ ndvi <- ndvi %>%
 
 ndvi$date <- factor(ndvi$date)
 levels(ndvi$date)
-
 ndvi$id <- factor(ndvi$id)
 ndvi$mean <- as.numeric(ndvi$mean)
 ndvi$stdDev <- as.numeric(ndvi$stdDev)
@@ -275,20 +274,6 @@ ndvi_var <- ndvi %>%
                          id %in% c("14", "1002") ~ "pouSOL"))
 
 ndvi_var$var <- factor(ndvi_var$var, levels = c("NPK", "NPKSOL",  "catt", "cattSOL", "pig", "pigSOL", "pou", "pouSOL"))
-
-# ggplot(ndvi_var, aes(date, mean, color = var))+
-#   geom_line(size = .7, position=position_dodge(width = 1))+
-#   geom_errorbar(aes(ymin=mean-stdDev, ymax=mean+stdDev), width=.5, size = .5, 
-#                 position=position_dodge(width = 1))+ # linetype = sol
-#   geom_point(size = 2, position=position_dodge(width = 1))+ # aes(shape = sol), 
-#   labs(y = "NDVI", 
-#        x = "", title = "", color = "")+
-#   scale_color_brewer(palette = "BrBG")+
-#   # coord_cartesian(ylim = c(75, 120))+
-#   # geom_text(aes(y = 118, label = lab_ci),
-#   # size = 5, position=position_dodge(1))+
-#   theme_classic(base_size = 20)+ # base_size = 20
-#   theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90)) # axis.text.x = element_text(size = 11)
 
 # separated seasons
 
@@ -321,17 +306,7 @@ NDVIs4 <- ndvi_var %>%
   mutate(seas = "s4")%>% 
   mutate(crop = "winter wheat")
 
-# write_xlsx(NDVIs1,"NDVIs1.xlsx") # package "writexl"
-# write_xlsx(NDVIs2,"NDVIs2.xlsx") # package "writexl"
-# write_xlsx(NDVIs3,"NDVIs3.xlsx") # package "writexl"
-# write_xlsx(NDVIs4,"NDVIs4.xlsx") # package "writexl"
-
-
-#facet plot all seasons
-
 ndvi_seas <- rbind(NDVIs1, NDVIs2, NDVIs3, NDVIs4)
-
-# write_xlsx(ndvi_seas,"NDVI.xlsx") # package "writexl"
 
 # plots
 
@@ -414,18 +389,6 @@ ggplot(NDVIs4, aes(date, mean, color = var))+
   # size = 5, position=position_dodge(1))+
   theme_classic(base_size = 20)+ # base_size = 20
   theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90)) # axis.text.x = element_text(size = 11)
-
-# analysis
-
-hist(ndvi_seas$mean)
-shapiro.test(ndvi_seas$mean)
-bartlett.test(ndvi_seas$mean ~ ndvi_seas$var) # yep
-
-install.packages("lme4")
-require(lme4)
-
-m1 <- lmer(mean ~ var + (1|date) + crop, data = ndvi_seas)
-summary(m1)
 
 # GEE NDWI ---------------------------------------------------------------------
 
@@ -727,4 +690,86 @@ ggplot(rs, aes (date, mean, color = var))+
   theme_classic(base_size = 25)+ # base_size = 20
   theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90), 
         legend.position = "top") # axis.text.x = element_text(size = 11) # legend.position = c(0.9, 0.85))
-ggsave("plots/RSall.png", device = "png", width = 14, height = 9, dpi = 300)
+# ggsave("plots/RSall.png", device = "png", width = 14, height = 9, dpi = 300)
+
+ggplot(rs, aes (var, mean))+
+  geom_boxplot()+
+  labs(y = "Index value", 
+       x = "", title = "", color = "")+
+  # scale_y_continuous(limits = c(0.8, 1), breaks = seq(0.8, 1, by = 0.1))+
+  # scale_color_brewer(palette="Spectral")+
+  facet_grid(index ~ seas, scales = "free")+
+  # coord_cartesian(ylim = c(75, 120))+
+  # geom_text(aes(y = 118, label = lab_ci),
+  # size = 5, position=position_dodge(1))+
+  theme_classic(base_size = 25)+ # base_size = 20
+  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90), 
+        legend.position = "top") # axis.text.x = element_text(size = 11) # legend.position = c(0.9, 0.85))
+ggsave("plots/RSall_boxplot.png", device = "png", width = 14, height = 9, dpi = 300)
+
+
+# GEE analysis emmeans ----------------------------------------------------
+
+# data used:
+  # NDVIs1, NDVIs2, NDVIs3, NDVIs4
+  # NDWIs1, NDWIs2, NDWIs3, NDWIs4
+  # LAIs1, LAIs2, LAIs3, LAIs4
+
+# install.packages("lme4")
+require(lme4)
+# install.packages("emmeans")
+require(emmeans) # https://cran.r-project.org/web/packages/emmeans/vignettes/sophisticated.html
+
+# NDVI 
+
+m1 <- lmer(mean ~ var + (1|date), data = NDVIs1)
+em1 <- emmeans(m1, "var")
+emmeans(m1, pairwise ~ var) 
+
+m2 <- lmer(mean ~ var + (1|date), data = NDVIs2)
+em2 <- emmeans(m2, "var")
+emmeans(m2, pairwise ~ var) 
+
+m3 <- lmer(mean ~ var + (1|date), data = NDVIs3)
+em3 <- emmeans(m3, "var")
+emmeans(m3, pairwise ~ var) 
+
+m4 <- lmer(mean ~ var + (1|date), data = NDVIs4)
+em4 <- emmeans(m4, "var")
+emmeans(m4, pairwise ~ var) 
+
+# NDWI
+
+m5 <- lmer(mean ~ var + (1|date), data = NDWIs1)
+em5 <- emmeans(m5, "var")
+emmeans(m5, pairwise ~ var) 
+
+m6 <- lmer(mean ~ var + (1|date), data = NDWIs2)
+em6 <- emmeans(m6, "var")
+emmeans(m6, pairwise ~ var) 
+
+m7 <- lmer(mean ~ var + (1|date), data = NDWIs3)
+em7 <- emmeans(m7, "var")
+emmeans(m7, pairwise ~ var) 
+
+m8 <- lmer(mean ~ var + (1|date), data = NDWIs4)
+em8 <- emmeans(m8, "var")
+emmeans(m8, pairwise ~ var) 
+
+# LAI
+
+m9 <- lmer(mean ~ var + (1|date), data = LAIs1)
+em9 <- emmeans(m9, "var")
+emmeans(m9, pairwise ~ var) 
+
+m10 <- lmer(mean ~ var + (1|date), data = LAIs2)
+em10 <- emmeans(m10, "var")
+emmeans(m10, pairwise ~ var) 
+
+m11 <- lmer(mean ~ var + (1|date), data = LAIs3)
+em11 <- emmeans(m11, "var")
+emmeans(m11, pairwise ~ var) 
+
+m12 <- lmer(mean ~ var + (1|date), data = LAIs4)
+em12 <- emmeans(m12, "var")
+emmeans(m12, pairwise ~ var) 
