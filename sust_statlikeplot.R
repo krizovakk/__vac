@@ -253,7 +253,8 @@ ndvi <- read.csv("red/NDVImeansd.csv", header = TRUE)
 
 ndvi <- ndvi %>% 
   mutate(date = substr(`system.index`, 1, 8)) %>% 
-  select(id, mean, stdDev, date)
+  select(id, mean, stdDev, date)%>% 
+  mutate(index = "NDVI")
 
 ndvi$date <- factor(ndvi$date)
 levels(ndvi$date)
@@ -426,17 +427,14 @@ require(lme4)
 m1 <- lmer(mean ~ var + (1|date) + crop, data = ndvi_seas)
 summary(m1)
 
-#
-
-
-
 # GEE NDWI ---------------------------------------------------------------------
 
 ndwi <- read.csv("red/NDWImeansd.csv", header = TRUE)
 
 ndwi <- ndwi %>% 
   mutate(date = substr(`system.index`, 1, 8)) %>% 
-  select(id, mean, stdDev, date)
+  select(id, mean, stdDev, date) %>% 
+  mutate(index = "NDWI")
 
 ndwi$date <- factor(ndwi$date)
 levels(ndwi$date)
@@ -606,7 +604,8 @@ lai <- read.csv("red/LAImeansd.csv", header = TRUE)
 
 lai <- lai %>% 
   mutate(date = substr(`system.index`, 1, 8)) %>% 
-  select(id, mean, stdDev, date)
+  select(id, mean, stdDev, date) %>% 
+  mutate(index = "LAI")
 
 lai$date <- factor(lai$date)
 levels(lai$date)
@@ -702,3 +701,30 @@ summary(m3)
 
 m4 <- lm(lai_seas$mean ~ lai_seas$var)
 summary(aov(m4))
+
+# GEE all in one ----------------------------------------------------------
+
+rs <- rbind(ndvi_seas, ndwi_seas, lai_seas)
+rs$index <- factor(rs$index, levels = c("NDVI", "NDWI", "LAI"))
+
+to_string <- as_labeller(c("s1" = "winter wheat", "s2" = "corn", 
+                           "s3" = "winter wheat", "s4" = "winter wheat",
+                           "NDVI" = "NDVI", "NDWI" = "NDWI", "LAI" = "LAI"))
+
+ggplot(rs, aes (date, mean, color = var))+
+  geom_line(size = .7, position=position_dodge(width = 1))+
+  geom_errorbar(aes(ymin=mean-stdDev, ymax=mean+stdDev), width=.5, size = .5, 
+                position=position_dodge(width = 1))+ # linetype = sol
+  geom_point(size = 2, position=position_dodge(width = 1))+ # aes(shape = sol)
+  labs(y = "Index value", 
+       x = "", title = "", color = "")+
+  # scale_y_continuous(limits = c(0.8, 1), breaks = seq(0.8, 1, by = 0.1))+
+  scale_color_brewer(palette="Spectral")+
+  facet_grid(index ~ seas, scales = "free", labeller = to_string)+
+  # coord_cartesian(ylim = c(75, 120))+
+  # geom_text(aes(y = 118, label = lab_ci),
+  # size = 5, position=position_dodge(1))+
+  theme_classic(base_size = 25)+ # base_size = 20
+  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90), 
+        legend.position = "top") # axis.text.x = element_text(size = 11) # legend.position = c(0.9, 0.85))
+ggsave("plots/RSall.png", device = "png", width = 14, height = 9, dpi = 300)
