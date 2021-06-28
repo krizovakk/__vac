@@ -83,10 +83,27 @@ ud$var <- factor(ud$var, levels = varlev, labels = varlab)
 
 ud_string <- as_labeller(c("T1" = "Term I", "T2" = "Term II", "T3" = "Term III"))
 
+# ggplot(ud, aes(var, unitd, fill = sol, alpha = sol, color = duo))+ # BETTER BOXPLOT BELOW
+#   geom_boxplot()+
+#   scale_fill_manual(values=c("grey", "grey")) +
+#   scale_alpha_manual(values=c(0.1,0.8)) +
+#   scale_color_brewer(palette = "Spectral")+
+#   # scale_fill_manual(breaks = var, values = c("azure1", "azure4", "cornsilk2", "lightgoldenrod4", 
+#   #                               "lightpink", "lightpink4", "peachpuff", "peru"))+
+#   facet_grid(.~ ud$term, labeller = ud_string)+
+#   labs(y = expression("Unit Draft [ kN "~ m^-2~"]"),  #"Unit Draft [%]"
+#        x = "", title = "", fill = "")+
+#   coord_cartesian(ylim = c(85, 260))+
+#   # geom_text(aes(y = 260, label = lab_ud_df), size = 5)+
+#   theme_classic(base_size = 20)+ # base_size = 20
+#   theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90),
+#         legend.position = "none")
+# # ggsave("plots/ud_box.png", device = "png", width = 10, height = 5, dpi = 300)
+
 ggplot(ud, aes(var, unitd, fill = sol, alpha = sol, color = duo))+
-  geom_boxplot()+
+  geom_boxplot(lwd=0.8)+
   scale_fill_manual(values=c("grey", "grey")) +
-  scale_alpha_manual(values=c(0.1,0.8)) +
+  scale_alpha_manual(values=c(0.1,0.6)) +
   scale_color_brewer(palette = "Spectral")+
   # scale_fill_manual(breaks = var, values = c("azure1", "azure4", "cornsilk2", "lightgoldenrod4", 
   #                               "lightpink", "lightpink4", "peachpuff", "peru"))+
@@ -96,9 +113,9 @@ ggplot(ud, aes(var, unitd, fill = sol, alpha = sol, color = duo))+
   coord_cartesian(ylim = c(85, 260))+
   # geom_text(aes(y = 260, label = lab_ud_df), size = 5)+
   theme_classic(base_size = 20)+ # base_size = 20
-  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90),
+  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90, hjust = 0),
         legend.position = "none")
-ggsave("plots/ud_box.png", device = "png", width = 10, height = 5, dpi = 300)
+ggsave("plots/ud.png", device = "png", width = 10, height = 5, dpi = 300)
 
 
 # SFH --------------------------------------------------------------
@@ -131,9 +148,9 @@ sfh$term <- factor(sfh$term)
 sfh_string <- as_labeller(c("T1" = "Term I", "T2" = "Term II", "T3" = "Term III"))
 
 ggplot(sfh, aes(var, val, fill = sol, alpha = sol, color = duo))+
-  geom_boxplot()+
+  geom_boxplot(lwd = 0.8)+
   scale_fill_manual(values=c("grey", "grey")) +
-  scale_alpha_manual(values=c(0.1,0.8)) +
+  scale_alpha_manual(values=c(0.1,0.6)) +
   scale_color_brewer(palette = "Spectral")+
   # scale_fill_manual(breaks = var, values = c("azure1", "azure4", "cornsilk2", "lightgoldenrod4", 
   #                               "lightpink", "lightpink4", "peachpuff", "peru"))+
@@ -143,9 +160,9 @@ ggplot(sfh, aes(var, val, fill = sol, alpha = sol, color = duo))+
   # coord_cartesian(ylim = c(85, 260))+
   # geom_text(aes(y = 260, label = lab_ud_df), size = 5)+
   theme_classic(base_size = 20)+ # base_size = 20
-  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90),
+  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90, hjust = 0),
         legend.position = "none")
-ggsave("plots/sfh_box.png", device = "png", width = 10, height = 5, dpi = 300)
+ggsave("plots/sfh.png", device = "png", width = 10, height = 5, dpi = 300)
 
 # RBD --------------------------------------------------------------
 
@@ -173,9 +190,9 @@ rbd$term <- factor(rbd$term)
 rbd$var <- factor(rbd$var, levels = varlev, labels = varlab)
 
 ggplot(rbd, aes(var, val, fill = sol, alpha = sol, color = duo))+
-  geom_boxplot()+
+  geom_boxplot(lwd = 0.8)+
   scale_fill_manual(values=c("grey", "grey")) +
-  scale_alpha_manual(values=c(0.1,0.8)) +
+  scale_alpha_manual(values=c(0.1,0.6)) +
   scale_color_brewer(palette = "Spectral")+
   # scale_fill_manual(breaks = var, values = c("azure1", "azure4", "cornsilk2", "lightgoldenrod4", 
   #                               "lightpink", "lightpink4", "peachpuff", "peru"))+
@@ -185,9 +202,9 @@ ggplot(rbd, aes(var, val, fill = sol, alpha = sol, color = duo))+
   coord_cartesian(ylim = c(1, 1.65))+
   # geom_text(aes(y = 260, label = lab_ud_df), size = 5)+
   theme_classic(base_size = 20)+ # base_size = 20
-  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90),
+  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90, hjust = 0),
         legend.position = "none")
-ggsave("plots/bd_box.png", device = "png", width = 10, height = 5, dpi = 300)
+ggsave("plots/bd.png", device = "png", width = 10, height = 5, dpi = 300)
 
 # CI--------------------------------------------------------------
 
@@ -675,7 +692,7 @@ to_string <- as_labeller(c("s1" = "winter wheat", "s2" = "corn",
                            "NDVI" = "NDVI", "NDWI" = "NDWI", "LAI" = "LAI"))
 
 ggplot(rs, aes (date, mean, color = var))+
-  geom_line(size = .7, position=position_dodge(width = 1))+
+ # geom_line(size = .7, position=position_dodge(width = 1))+
   geom_errorbar(aes(ymin=mean-stdDev, ymax=mean+stdDev), width=.5, size = .5, 
                 position=position_dodge(width = 1))+ # linetype = sol
   geom_point(size = 2, position=position_dodge(width = 1))+ # aes(shape = sol)
@@ -688,7 +705,7 @@ ggplot(rs, aes (date, mean, color = var))+
   # geom_text(aes(y = 118, label = lab_ci),
   # size = 5, position=position_dodge(1))+
   theme_classic(base_size = 25)+ # base_size = 20
-  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90), 
+  theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 270), 
         legend.position = "top") # axis.text.x = element_text(size = 11) # legend.position = c(0.9, 0.85))
 # ggsave("plots/RSall.png", device = "png", width = 14, height = 9, dpi = 300)
 
