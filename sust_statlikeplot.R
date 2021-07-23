@@ -158,7 +158,7 @@ ggplot(sfh, aes(var, val, fill = sol, alpha = sol, color = duo))+
   labs(y = expression("Satur. Hydr. Conductivity [ mm "~ h^-1~"]"),  #"Unit Draft [%]"
        x = "", title = "", fill = "")+
   # coord_cartesian(ylim = c(85, 260))+
-  # geom_text(aes(y = 260, label = lab_ud_df), size = 5)+
+  # geom_text(aes(y = 260, label = lab_sfh), size = 5)+
   theme_classic(base_size = 20)+ # base_size = 20
   theme(text=element_text(family="Times New Roman"), axis.text.x = element_text(angle = 90, hjust = 0),
         legend.position = "none")
@@ -734,7 +734,7 @@ ggsave("plots/RSall_boxplot.png", device = "png", width = 14, height = 9, dpi = 
 
 # install.packages("lme4")
 require(lme4)
-# install.packages("emmeans")
+install.packages("emmeans")
 require(emmeans) # https://cran.r-project.org/web/packages/emmeans/vignettes/sophisticated.html
 
 # NDVI 
